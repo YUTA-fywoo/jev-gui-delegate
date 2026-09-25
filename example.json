@@ -1,0 +1,16 @@
+{
+  "state": {
+    "source": "synthetic installation test",
+    "goal": "Save a draft",
+    "controls": [
+      {"id": "save", "role": "button", "name": "Save draft", "enabled": true},
+      {"id": "cancel", "role": "button", "name": "Cancel", "enabled": true}
+    ],
+    "draft": "Hello test"
+  },
+  "questions": {
+    "next_control": {"type": "choice", "instructions": "Which control best matches the goal in state?", "criteria": {"save": "Save the draft", "cancel": "Cancel editing", "none": "No suitable enabled control"}},
+    "can_save": {"type": "noul", "instructions": "Is there an enabled Save draft button in state?"},
+    "readiness": {"type": "score", "instructions": "How ready is the state for saving a non-empty draft?", "criteria": ["No draft or usable save control", "Draft exists but save is disabled", "Non-empty draft and enabled save control"]}
+  }
+}

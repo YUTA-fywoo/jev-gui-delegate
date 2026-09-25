@@ -1,0 +1,9 @@
+{
+  "model": "jev-1.13.0",
+  "expected_model": "jev-1.13.0",
+  "calibrated": false,
+  "operation_timeout_seconds": 10.0,
+  "total_timeout_seconds": 40.0,
+  "max_retries": 2,
+  "retry_budget_seconds": 25.0
+}
