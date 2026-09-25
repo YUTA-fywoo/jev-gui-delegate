@@ -1,0 +1,12 @@
+interface:
+  display_name: "Jev GUI Delegate"
+  short_description: "Jev first for all GUI tasks, with recovery before Astra fallback"
+  default_prompt: "Use $jev-gui-delegate first for this GUI task; recover through the executor first; use Astra only for parts the executor cannot perform, and rely on verified results."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "jev-bridge"
+      description: "Local stdio task controller and TypeSafe Jev bridge"
+      transport: "stdio"
+policy:
+  allow_implicit_invocation: true
