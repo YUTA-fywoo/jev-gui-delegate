@@ -1,0 +1,6 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Jev synthetic GUI test</title>
+<label>Draft text <input id="draft" aria-label="Draft text"></label>
+<button id="save" type="button">Save draft</button>
+<p role="status" id="status">Not saved</p>
+<script>document.getElementById('save').onclick=()=>{document.getElementById('status').textContent='Saved: '+document.getElementById('draft').value}</script>
+</html>
