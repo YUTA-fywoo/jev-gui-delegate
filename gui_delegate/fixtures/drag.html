@@ -1,0 +1,4 @@
+<!doctype html><meta charset="utf-8"><title>Scoped drag fixture</title>
+<button draggable="true" type="button" aria-label="Source card" style="width:140px;height:80px" ondragstart="event.dataTransfer.setData('text/plain','fixture-card')">Source card</button>
+<div role="region" aria-label="Target basket" style="margin-top:90px;width:220px;height:120px;border:2px solid" ondragover="event.preventDefault()" ondrop="event.preventDefault();if(event.dataTransfer.getData('text/plain')==='fixture-card'){document.getElementById('state').textContent='Dropped once';this.textContent='Card received';}">Target basket</div>
+<output role="status" aria-label="Drag result" id="state">Pending</output>

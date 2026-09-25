@@ -1,0 +1,5 @@
+<!doctype html><meta charset="utf-8"><title>Jev ambiguity fixture</title>
+<button type="button" onclick="document.getElementById('state').textContent='First';document.getElementById('count').textContent=String(++window.n)">Save locally</button>
+<button type="button" onclick="document.getElementById('state').textContent='Second';document.getElementById('count').textContent=String(++window.n)">Save locally</button>
+<output role="status" aria-label="State" id="state">Pending</output><output role="status" aria-label="Count" id="count">0</output>
+<script>window.n=0</script>

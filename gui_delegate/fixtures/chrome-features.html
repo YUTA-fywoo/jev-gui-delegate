@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><title>Jev official Chrome capability test</title>
+<style>body{font:15px sans-serif;margin:15px}button,input,select,textarea{margin:5px}.box{border:1px solid #888;padding:8px;margin:5px}#scroll{height:90px;width:330px;overflow:auto}#drag{display:inline-block;background:#bdd;padding:15px}#drop{display:inline-block;background:#fdb;padding:15px}iframe{width:700px;height:70px;border:1px solid #ccc}</style>
+<h1>Local synthetic Chrome capability tests</h1>
+<label>中文输入<input id="name" aria-label="中文输入"></label>
+<label>メモ<textarea id="memo" aria-label="メモ"></textarea></label>
+<div id="shadow"></div>
+<iframe id="frame" title="Allowed cross-origin frame" src="__FRAME_ORIGIN__/frame"></iframe>
+<div><label>Volume<input type="range" id="volume" aria-label="Volume" min="0" max="10" step="1" value="2"></label>
+<button id="double" type="button" ondblclick="document.getElementById('doubleState').textContent='Double done'">Double action</button><span role="status" aria-label="Double state" id="doubleState">Pending</span>
+<button id="hover" type="button" onmouseover="document.getElementById('hoverState').textContent='Hover done'">Hover action</button><span role="status" aria-label="Hover state" id="hoverState">Pending</span></div>
+<div id="scroll" class="box" role="region" aria-label="Scroll area" tabindex="0" onscroll="document.getElementById('scrollState').textContent=String(Math.round(this.scrollTop))"><div style="height:400px">Synthetic scroll content</div><button type="button" id="bottom" onclick="document.getElementById('bottomState').textContent='Bottom done'">Bottom action</button></div>
+<span role="status" aria-label="Scroll state" id="scrollState">0</span><span role="status" aria-label="Bottom state" id="bottomState">Pending</span>
+<div><div id="drag" role="button" aria-label="Drag item" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','fixture')">Drag item</div><div id="drop" role="button" aria-label="Drop zone" ondragover="event.preventDefault()" ondrop="event.preventDefault();document.getElementById('dragState').textContent='Dropped once'">Drop zone</div><span role="status" aria-label="Drag state" id="dragState">Pending</span></div>
+<label>Attachment<input id="file" type="file" multiple aria-label="Attachment" onchange="document.getElementById('fileState').textContent=Array.from(this.files).map(x=>x.name).join(',')"></label><span role="status" aria-label="File state" id="fileState">None</span>
+<button type="button" id="upload" onclick="uploadSynthetic()">Upload synthetic</button><span role="status" aria-label="Upload state" id="uploadState">Pending</span>
+<a id="download" download="__DOWNLOAD_NAME__" href="/download">Download synthetic</a>
+<a id="destination" href="/destination">Known destination</a>
+<button type="button" id="alert" onclick="alert('Synthetic alert')">Open alert</button>
+<button type="button" id="confirm" onclick="document.getElementById('dialogState').textContent=confirm('Synthetic confirmation only')?'Accepted':'Dismissed'">Open confirm</button>
+<button type="button" id="prompt" onclick="document.getElementById('dialogState').textContent=prompt('Synthetic text only','')||'Cancelled'">Open prompt</button><span role="status" aria-label="Dialog state" id="dialogState">Pending</span>
+<img src="/image.svg" alt="Synthetic green square" width="40" height="40">
+<script>
+document.getElementById('shadow').attachShadow({mode:'open'}).innerHTML='<label>Shadow input<textarea id="shadowInput" aria-label="Shadow input"></textarea></label><button type="button" id="shadowButton">Shadow action</button><span role="status" aria-label="Shadow state" id="shadowState">Pending</span>';
+const sr=document.getElementById('shadow').shadowRoot;sr.getElementById('shadowButton').onclick=()=>sr.getElementById('shadowState').textContent='Shadow done';
+async function uploadSynthetic(){const f=document.getElementById('file').files[0];if(!f)return;const response=await fetch('/upload',{method:'POST',body:f});const result=await response.json();document.getElementById('uploadState').textContent=result.contains_synthetic_text?'Upload verified':'Wrong content';}
+console.info('Jev synthetic page ready');
+</script>

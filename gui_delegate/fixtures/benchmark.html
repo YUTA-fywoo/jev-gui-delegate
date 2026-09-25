@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><title>Synthetic same-state benchmark</title>
+<label id="label"><span id="caption"></span><textarea id="input"></textarea></label>
+<label><input type="checkbox" id="check"><span id="checkText"></span></label>
+<div role="group" aria-label="Draft actions"><button type="button" id="save"></button><button type="button" id="preview"></button><button type="button" id="clear"></button></div>
+<div role="status" aria-label="Result" id="result">Initial</div><div role="status" aria-label="Count" id="count">0</div>
+<script>
+const lang=new URLSearchParams(location.search).get('lang')||'en';
+const labels={en:['Draft text','Ready','Save locally','Preview','Clear draft'],zh:['草稿内容','准备完成','保存到本机','预览','清空草稿'],ja:['下書き本文','準備完了','この端末に保存','プレビュー','下書きを消去']}[lang];
+document.querySelector('#caption').textContent=labels[0];document.querySelector('#input').setAttribute('aria-label',labels[0]);
+document.querySelector('#checkText').textContent=labels[1];document.querySelector('#check').setAttribute('aria-label',labels[1]);
+['save','preview','clear'].forEach((id,i)=>document.getElementById(id).textContent=labels[i+2]);
+document.querySelector('#save').onclick=()=>{document.querySelector('#result').textContent='Saved';document.querySelector('#count').textContent=String(Number(document.querySelector('#count').textContent)+1);};
+document.querySelector('#preview').onclick=()=>document.querySelector('#result').textContent='Preview';
+document.querySelector('#clear').onclick=()=>document.querySelector('#input').value='';
+</script>

@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8"><title>Jev isolated workflow fixture</title>
+<style>body{font:16px sans-serif;margin:24px}label,button,select{margin:7px}#scrollbox{height:60px;overflow:auto;width:250px;border:1px solid}#more{height:190px}textarea{display:block}dialog{position:static}</style>
+<label>姓名<input aria-label="姓名"></label>
+<label>メモ<textarea aria-label="メモ"></textarea></label>
+<label>Language<select aria-label="Language"><option>English</option><option>日本語</option><option>中文</option></select></label>
+<label><input aria-label="同意" type="checkbox">同意</label>
+<input type="range" aria-label="Volume" min="0" max="10" value="0">
+<button type="button" onclick="document.querySelector('#menu').hidden=false">Open menu</button>
+<div id="menu" role="menu" hidden><button type="button" onclick="document.querySelector('#mode').textContent='Compact'">Compact view</button></div>
+<div role="status" aria-label="Mode" id="mode">Normal</div>
+<button type="button" onclick="document.querySelector('#row').textContent='Page 2'">Next page</button>
+<table aria-label="Results"><tr><td id="row" aria-label="Row">Page 1</td></tr></table>
+<div id="scrollbox" role="region" aria-label="Items"><div id="more">Virtual list source</div></div>
+<div role="status" aria-label="Scroll state" id="scrollState">Not scrolled</div>
+<iframe title="Nested form" srcdoc="<label>Frame input<input aria-label='Frame input'></label>"></iframe>
+<div id="shadow"></div>
+<button type="button" onclick="document.querySelector('#dialog').hidden=false">Next dialog</button>
+<div role="dialog" aria-label="Wizard" id="dialog" hidden><button type="button" onclick="this.parentElement.hidden=true;document.querySelector('#wizard').textContent='Wizard done'">Finish wizard</button></div>
+<div role="status" aria-label="Wizard state" id="wizard">Not started</div>
+<div role="group" aria-label="Draft actions">
+<button type="button" onclick="document.querySelector('#saved').textContent='Saved locally';window.saveCount=(window.saveCount||0)+1;document.querySelector('#count').textContent=String(window.saveCount)">Save locally</button>
+<button type="button" onclick="document.querySelector('#saved').textContent='Preview only'">Preview</button>
+<button type="button" onclick="document.querySelector('#saved').textContent='Cleared'">Clear draft</button>
+</div>
+<div role="status" aria-label="Saved state" id="saved">Not saved</div>
+<div role="status" aria-label="Save count" id="count">0</div>
+<script>document.querySelector('#shadow').attachShadow({mode:'open'}).innerHTML='<label>Shadow input<input aria-label="Shadow input"></label>';</script>
+<script>document.querySelector('#scrollbox').onscroll=function(){if(this.querySelector('button'))return;document.querySelector('#scrollState').textContent='Scrolled';const b=document.createElement('button');b.type='button';b.textContent='Virtual item';b.onclick=()=>document.querySelector('#scrollState').textContent='Virtual selected';this.appendChild(b);};</script>

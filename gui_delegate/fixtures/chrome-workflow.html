@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><title>Jev Chrome integration test</title>
+<style>body{font:16px sans-serif;margin:24px}label,button,select{margin:8px}textarea{display:block;width:400px;height:70px}</style>
+<h1>Jev Chrome integration test</h1><p>Local synthetic data only. No real account actions.</p>
+<label>姓名<input id="person" aria-label="姓名"></label>
+<label>メモ<textarea id="memo" aria-label="メモ"></textarea></label>
+<label>Language<select id="lang" aria-label="Language"><option>English</option><option>日本語</option><option>中文</option></select></label>
+<label><input id="agree" aria-label="同意" type="checkbox">同意</label>
+<button type="button" id="menuButton" onclick="document.getElementById('menu').hidden=false">Open menu</button>
+<div id="menu" hidden><button type="button" id="compact" onclick="document.getElementById('mode').textContent='Compact'">Compact view</button></div>
+<div role="status" aria-label="Mode" id="mode">Normal</div>
+<button type="button" id="nextpage" onclick="document.getElementById('row').textContent='Page 2'">Next page</button>
+<table><tr><td role="cell" id="row" aria-label="Row">Page 1</td></tr></table>
+<button type="button" id="nextdialog" onclick="document.getElementById('dialog').hidden=false">Next dialog</button>
+<div id="dialog" hidden><button type="button" id="finish" onclick="document.getElementById('dialog').hidden=true;document.getElementById('wizard').textContent='Wizard done'">Finish wizard</button></div>
+<div role="status" aria-label="Wizard state" id="wizard">Not started</div>
+<div role="group" aria-label="Draft actions">
+<button type="button" id="save" onclick="document.getElementById('saved').textContent='Saved locally';window.saveCount=(window.saveCount||0)+1;document.getElementById('count').textContent=String(window.saveCount)">Save locally</button>
+<button type="button" id="preview" onclick="document.getElementById('saved').textContent='Preview only'">Preview</button>
+<button type="button" id="clear" onclick="document.getElementById('saved').textContent='Cleared'">Clear draft</button></div>
+<div role="status" aria-label="Saved state" id="saved">Not saved</div>
+<div role="status" aria-label="Save count" id="count">0</div>
