@@ -1,0 +1,322 @@
+{
+  "goal": "Complete a synthetic local draft workflow without external side effects.",
+  "language": "mixed",
+  "target": {
+    "driver": "browser",
+    "connection": "official_chrome",
+    "tab_id": "REPLACE_WITH_OBSERVED_TAB_ID",
+    "url": "http://127.0.0.1:8000/workflow"
+  },
+  "scope": {
+    "programs": [],
+    "origins": [
+      "http://127.0.0.1:8000"
+    ],
+    "read_roots": [],
+    "write_roots": [],
+    "actions": [
+      "check",
+      "click",
+      "fill",
+      "select",
+      "uncheck"
+    ]
+  },
+  "inputs": {
+    "name": {
+      "value": "合成测试 张三"
+    },
+    "memo": {
+      "value": "日本語のテスト\n中文第二行 & < > \" ' \\ $"
+    },
+    "language": {
+      "value": "日本語"
+    }
+  },
+  "steps": [
+    {
+      "id": "name",
+      "intent": "fill 姓名",
+      "op": "fill",
+      "target": {
+        "role": "textbox",
+        "name": "姓名"
+      },
+      "effect": "local",
+      "after": [
+        {
+          "kind": "value",
+          "target": {
+            "role": "textbox",
+            "name": "姓名"
+          },
+          "input_ref": "name"
+        }
+      ],
+      "input_ref": "name"
+    },
+    {
+      "id": "memo",
+      "intent": "fill メモ",
+      "op": "fill",
+      "target": {
+        "role": "textbox",
+        "name": "メモ"
+      },
+      "effect": "local",
+      "after": [
+        {
+          "kind": "value",
+          "target": {
+            "role": "textbox",
+            "name": "メモ"
+          },
+          "input_ref": "memo"
+        }
+      ],
+      "input_ref": "memo"
+    },
+    {
+      "id": "language",
+      "intent": "select Language",
+      "op": "select",
+      "target": {
+        "role": "combobox",
+        "name": "Language"
+      },
+      "effect": "local",
+      "after": [
+        {
+          "kind": "value",
+          "target": {
+            "role": "combobox",
+            "name": "Language"
+          },
+          "equals": "日本語"
+        }
+      ],
+      "input_ref": "language"
+    },
+    {
+      "id": "agree",
+      "intent": "check 同意",
+      "op": "check",
+      "target": {
+        "role": "checkbox",
+        "name": "同意"
+      },
+      "effect": "local",
+      "after": [
+        {
+          "kind": "checked",
+          "target": {
+            "role": "checkbox",
+            "name": "同意"
+          },
+          "equals": true
+        }
+      ]
+    },
+    {
+      "id": "uncheck",
+      "intent": "uncheck 同意",
+      "op": "uncheck",
+      "target": {
+        "role": "checkbox",
+        "name": "同意"
+      },
+      "effect": "local",
+      "after": [
+        {
+          "kind": "checked",
+          "target": {
+            "role": "checkbox",
+            "name": "同意"
+          },
+          "equals": false
+        }
+      ]
+    },
+    {
+      "id": "recheck",
+      "intent": "check 同意",
+      "op": "check",
+      "target": {
+        "role": "checkbox",
+        "name": "同意"
+      },
+      "effect": "local",
+      "after": [
+        {
+          "kind": "checked",
+          "target": {
+            "role": "checkbox",
+            "name": "同意"
+          },
+          "equals": true
+        }
+      ]
+    },
+    {
+      "id": "menu",
+      "intent": "click Open menu",
+      "op": "click",
+      "target": {
+        "role": "button",
+        "name": "Open menu"
+      },
+      "effect": "local",
+      "after": [
+        {
+          "kind": "exists",
+          "target": {
+            "role": "button",
+            "name": "Compact view"
+          }
+        }
+      ]
+    },
+    {
+      "id": "compact",
+      "intent": "click Compact view",
+      "op": "click",
+      "target": {
+        "role": "button",
+        "name": "Compact view"
+      },
+      "effect": "local",
+      "after": [
+        {
+          "kind": "text",
+          "target": {
+            "role": "status",
+            "name": "Mode"
+          },
+          "equals": "Compact"
+        }
+      ]
+    },
+    {
+      "id": "page",
+      "intent": "click Next page",
+      "op": "click",
+      "target": {
+        "role": "button",
+        "name": "Next page"
+      },
+      "effect": "local",
+      "after": [
+        {
+          "kind": "text",
+          "target": {
+            "role": "cell",
+            "name": "Row"
+          },
+          "equals": "Page 2"
+        }
+      ]
+    },
+    {
+      "id": "wizard",
+      "intent": "click Next dialog",
+      "op": "click",
+      "target": {
+        "role": "button",
+        "name": "Next dialog"
+      },
+      "effect": "local",
+      "after": [
+        {
+          "kind": "exists",
+          "target": {
+            "role": "button",
+            "name": "Finish wizard"
+          }
+        }
+      ]
+    },
+    {
+      "id": "finish",
+      "intent": "click Finish wizard",
+      "op": "click",
+      "target": {
+        "role": "button",
+        "name": "Finish wizard"
+      },
+      "effect": "local",
+      "after": [
+        {
+          "kind": "text",
+          "target": {
+            "role": "status",
+            "name": "Wizard state"
+          },
+          "equals": "Wizard done"
+        }
+      ]
+    },
+    {
+      "id": "save",
+      "intent": "Save this draft locally on the device. Do not preview or clear it.",
+      "op": "click",
+      "target": {
+        "role": "button",
+        "name": "Store the edited draft on this device",
+        "semantic": true,
+        "group": "Draft actions"
+      },
+      "effect": "local",
+      "after": [
+        {
+          "kind": "text",
+          "target": {
+            "role": "status",
+            "name": "Saved state"
+          },
+          "equals": "Saved locally"
+        }
+      ]
+    }
+  ],
+  "success": [
+    {
+      "kind": "text",
+      "target": {
+        "role": "status",
+        "name": "Saved state"
+      },
+      "equals": "Saved locally"
+    },
+    {
+      "kind": "text",
+      "target": {
+        "role": "status",
+        "name": "Save count"
+      },
+      "equals": "1"
+    },
+    {
+      "kind": "value",
+      "target": {
+        "role": "textbox",
+        "name": "メモ"
+      },
+      "input_ref": "memo"
+    }
+  ],
+  "jev_label_allowlist": [
+    "Open menu",
+    "Compact view",
+    "Next page",
+    "Virtual item",
+    "Next dialog",
+    "Save locally",
+    "Preview",
+    "Clear draft"
+  ],
+  "budget": {
+    "seconds": 180,
+    "steps": 30,
+    "jev_calls": 3
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "goal": "Complete the synthetic local draft benchmark.",
+  "language": "zh",
+  "target": {
+    "driver": "browser",
+    "url": "file:///C:/jev/jev-bridge/gui_delegate/fixtures/benchmark.html?lang=zh"
+  },
+  "scope": {
+    "read_roots": [
+      "C:\\jev\\jev-bridge\\gui_delegate\\fixtures"
+    ],
+    "actions": [
+      "fill",
+      "check",
+      "click"
+    ]
+  },
+  "inputs": {
+    "draft": {
+      "value": "合成测试 & < >\n第二行"
+    }
+  },
+  "steps": [
+    {
+      "id": "fill",
+      "intent": "Fill the provided draft text",
+      "op": "fill",
+      "effect": "local",
+      "target": {
+        "role": "textbox",
+        "name": "草稿内容"
+      },
+      "input_ref": "draft",
+      "after": [
+        {
+          "kind": "value",
+          "target": {
+            "role": "textbox",
+            "name": "草稿内容"
+          },
+          "input_ref": "draft"
+        }
+      ]
+    },
+    {
+      "id": "ready",
+      "intent": "Mark the draft ready",
+      "op": "check",
+      "effect": "local",
+      "target": {
+        "role": "checkbox",
+        "name": "准备完成"
+      },
+      "after": [
+        {
+          "kind": "checked",
+          "target": {
+            "role": "checkbox",
+            "name": "准备完成"
+          },
+          "equals": true
+        }
+      ]
+    },
+    {
+      "id": "save",
+      "intent": "把草稿保存在本机。",
+      "op": "click",
+      "effect": "local",
+      "target": {
+        "role": "button",
+        "name": "__semantic_goal__",
+        "group": "Draft actions",
+        "semantic": true
+      },
+      "after": [
+        {
+          "kind": "text",
+          "target": {
+            "role": "status",
+            "name": "Result"
+          },
+          "equals": "Saved"
+        },
+        {
+          "kind": "text",
+          "target": {
+            "role": "status",
+            "name": "Count"
+          },
+          "equals": "1"
+        }
+      ]
+    }
+  ],
+  "success": [
+    {
+      "kind": "value",
+      "target": {
+        "role": "textbox",
+        "name": "草稿内容"
+      },
+      "input_ref": "draft"
+    },
+    {
+      "kind": "checked",
+      "target": {
+        "role": "checkbox",
+        "name": "准备完成"
+      },
+      "equals": true
+    },
+    {
+      "kind": "text",
+      "target": {
+        "role": "status",
+        "name": "Result"
+      },
+      "equals": "Saved"
+    },
+    {
+      "kind": "text",
+      "target": {
+        "role": "status",
+        "name": "Count"
+      },
+      "equals": "1"
+    }
+  ],
+  "jev_label_allowlist": [
+    "保存到本机",
+    "预览",
+    "清空草稿"
+  ],
+  "budget": {
+    "seconds": 45,
+    "steps": 5,
+    "jev_calls": 2
+  }
+}

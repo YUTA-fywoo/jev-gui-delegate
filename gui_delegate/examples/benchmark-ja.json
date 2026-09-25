@@ -1,0 +1,140 @@
+{
+  "goal": "Complete the synthetic local draft benchmark.",
+  "language": "ja",
+  "target": {
+    "driver": "browser",
+    "url": "file:///C:/jev/jev-bridge/gui_delegate/fixtures/benchmark.html?lang=ja"
+  },
+  "scope": {
+    "read_roots": [
+      "C:\\jev\\jev-bridge\\gui_delegate\\fixtures"
+    ],
+    "actions": [
+      "fill",
+      "check",
+      "click"
+    ]
+  },
+  "inputs": {
+    "draft": {
+      "value": "合成テスト & < >\n二行目"
+    }
+  },
+  "steps": [
+    {
+      "id": "fill",
+      "intent": "Fill the provided draft text",
+      "op": "fill",
+      "effect": "local",
+      "target": {
+        "role": "textbox",
+        "name": "下書き本文"
+      },
+      "input_ref": "draft",
+      "after": [
+        {
+          "kind": "value",
+          "target": {
+            "role": "textbox",
+            "name": "下書き本文"
+          },
+          "input_ref": "draft"
+        }
+      ]
+    },
+    {
+      "id": "ready",
+      "intent": "Mark the draft ready",
+      "op": "check",
+      "effect": "local",
+      "target": {
+        "role": "checkbox",
+        "name": "準備完了"
+      },
+      "after": [
+        {
+          "kind": "checked",
+          "target": {
+            "role": "checkbox",
+            "name": "準備完了"
+          },
+          "equals": true
+        }
+      ]
+    },
+    {
+      "id": "save",
+      "intent": "下書きをこの端末に保存してください。",
+      "op": "click",
+      "effect": "local",
+      "target": {
+        "role": "button",
+        "name": "__semantic_goal__",
+        "group": "Draft actions",
+        "semantic": true
+      },
+      "after": [
+        {
+          "kind": "text",
+          "target": {
+            "role": "status",
+            "name": "Result"
+          },
+          "equals": "Saved"
+        },
+        {
+          "kind": "text",
+          "target": {
+            "role": "status",
+            "name": "Count"
+          },
+          "equals": "1"
+        }
+      ]
+    }
+  ],
+  "success": [
+    {
+      "kind": "value",
+      "target": {
+        "role": "textbox",
+        "name": "下書き本文"
+      },
+      "input_ref": "draft"
+    },
+    {
+      "kind": "checked",
+      "target": {
+        "role": "checkbox",
+        "name": "準備完了"
+      },
+      "equals": true
+    },
+    {
+      "kind": "text",
+      "target": {
+        "role": "status",
+        "name": "Result"
+      },
+      "equals": "Saved"
+    },
+    {
+      "kind": "text",
+      "target": {
+        "role": "status",
+        "name": "Count"
+      },
+      "equals": "1"
+    }
+  ],
+  "jev_label_allowlist": [
+    "この端末に保存",
+    "プレビュー",
+    "下書きを消去"
+  ],
+  "budget": {
+    "seconds": 45,
+    "steps": 5,
+    "jev_calls": 2
+  }
+}

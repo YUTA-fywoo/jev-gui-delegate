@@ -1,0 +1,140 @@
+{
+  "goal": "Complete the synthetic local draft benchmark.",
+  "language": "en",
+  "target": {
+    "driver": "browser",
+    "url": "file:///C:/jev/jev-bridge/gui_delegate/fixtures/benchmark.html?lang=en"
+  },
+  "scope": {
+    "read_roots": [
+      "C:\\jev\\jev-bridge\\gui_delegate\\fixtures"
+    ],
+    "actions": [
+      "fill",
+      "check",
+      "click"
+    ]
+  },
+  "inputs": {
+    "draft": {
+      "value": "Synthetic test & < >\nLine two"
+    }
+  },
+  "steps": [
+    {
+      "id": "fill",
+      "intent": "Fill the provided draft text",
+      "op": "fill",
+      "effect": "local",
+      "target": {
+        "role": "textbox",
+        "name": "Draft text"
+      },
+      "input_ref": "draft",
+      "after": [
+        {
+          "kind": "value",
+          "target": {
+            "role": "textbox",
+            "name": "Draft text"
+          },
+          "input_ref": "draft"
+        }
+      ]
+    },
+    {
+      "id": "ready",
+      "intent": "Mark the draft ready",
+      "op": "check",
+      "effect": "local",
+      "target": {
+        "role": "checkbox",
+        "name": "Ready"
+      },
+      "after": [
+        {
+          "kind": "checked",
+          "target": {
+            "role": "checkbox",
+            "name": "Ready"
+          },
+          "equals": true
+        }
+      ]
+    },
+    {
+      "id": "save",
+      "intent": "Save the draft locally on this device.",
+      "op": "click",
+      "effect": "local",
+      "target": {
+        "role": "button",
+        "name": "__semantic_goal__",
+        "group": "Draft actions",
+        "semantic": true
+      },
+      "after": [
+        {
+          "kind": "text",
+          "target": {
+            "role": "status",
+            "name": "Result"
+          },
+          "equals": "Saved"
+        },
+        {
+          "kind": "text",
+          "target": {
+            "role": "status",
+            "name": "Count"
+          },
+          "equals": "1"
+        }
+      ]
+    }
+  ],
+  "success": [
+    {
+      "kind": "value",
+      "target": {
+        "role": "textbox",
+        "name": "Draft text"
+      },
+      "input_ref": "draft"
+    },
+    {
+      "kind": "checked",
+      "target": {
+        "role": "checkbox",
+        "name": "Ready"
+      },
+      "equals": true
+    },
+    {
+      "kind": "text",
+      "target": {
+        "role": "status",
+        "name": "Result"
+      },
+      "equals": "Saved"
+    },
+    {
+      "kind": "text",
+      "target": {
+        "role": "status",
+        "name": "Count"
+      },
+      "equals": "1"
+    }
+  ],
+  "jev_label_allowlist": [
+    "Save locally",
+    "Preview",
+    "Clear draft"
+  ],
+  "budget": {
+    "seconds": 45,
+    "steps": 5,
+    "jev_calls": 2
+  }
+}
