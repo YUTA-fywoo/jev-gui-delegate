@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "id": "daily-gui-20260923",
+  "model": "jev-1.13.0",
+  "protocol_sha256": "01ba0508a281c8cff01fcb8fdc0ee32bb9e0f5e672155d07e002436d716ee6dc",
+  "status": "synthetic_holdout_validated",
+  "production_calibrated": false,
+  "evidence_report": "LOCAL_VALIDATION_REPORT.json",
+  "evidence_sha256": "REPLACE_WITH_YOUR_VERIFIED_REPORT_SHA256",
+  "profiles": [
+    {
+      "driver": "browser",
+      "language": "en",
+      "thresholds": {
+        "probability": 0.95,
+        "confidence": 0.9,
+        "margin": 0.15
+      },
+      "max_candidates": 6
+    },
+    {
+      "driver": "windows",
+      "language": "zh",
+      "thresholds": {
+        "probability": 0.95,
+        "confidence": 0.9,
+        "margin": 0.15
+      },
+      "max_candidates": 6
+    }
+  ]
+}
