@@ -1,0 +1,78 @@
+{
+  "$defs": {
+    "DecisionOverride": {
+      "additionalProperties": false,
+      "properties": {
+        "step_id": {
+          "title": "Step Id",
+          "type": "string"
+        },
+        "control_id": {
+          "title": "Control Id",
+          "type": "string"
+        },
+        "observation_fingerprint": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Observation Fingerprint",
+          "type": "string"
+        }
+      },
+      "required": [
+        "step_id",
+        "control_id",
+        "observation_fingerprint"
+      ],
+      "title": "DecisionOverride",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "resume_token": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Resume Token",
+      "type": "string"
+    },
+    "wait_seconds": {
+      "default": 35,
+      "maximum": 40,
+      "minimum": 0,
+      "title": "Wait Seconds",
+      "type": "integer"
+    },
+    "continue_task": {
+      "default": false,
+      "title": "Continue Task",
+      "type": "boolean"
+    },
+    "user_released_control": {
+      "default": false,
+      "title": "User Released Control",
+      "type": "boolean"
+    },
+    "input_updates": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "maxProperties": 20,
+      "title": "Input Updates",
+      "type": "object"
+    },
+    "decision_override": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DecisionOverride"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "resume_token"
+  ],
+  "title": "Resume",
+  "type": "object"
+}

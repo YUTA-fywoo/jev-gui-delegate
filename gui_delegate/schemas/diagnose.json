@@ -1,0 +1,20 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "resume_token": {
+      "anyOf": [
+        {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Resume Token"
+    }
+  },
+  "title": "Diagnose",
+  "type": "object"
+}

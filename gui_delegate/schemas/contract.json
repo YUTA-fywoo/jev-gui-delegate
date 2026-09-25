@@ -1,0 +1,928 @@
+{
+  "$defs": {
+    "Authorization": {
+      "additionalProperties": false,
+      "properties": {
+        "step_id": {
+          "title": "Step Id",
+          "type": "string"
+        },
+        "effect": {
+          "enum": [
+            "none",
+            "local",
+            "submit",
+            "send",
+            "publish",
+            "pay",
+            "delete",
+            "overwrite",
+            "account"
+          ],
+          "title": "Effect",
+          "type": "string"
+        },
+        "target_name": {
+          "title": "Target Name",
+          "type": "string"
+        },
+        "destination": {
+          "title": "Destination",
+          "type": "string"
+        },
+        "user_instruction": {
+          "maxLength": 500,
+          "minLength": 8,
+          "title": "User Instruction",
+          "type": "string"
+        }
+      },
+      "required": [
+        "step_id",
+        "effect",
+        "target_name",
+        "destination",
+        "user_instruction"
+      ],
+      "title": "Authorization",
+      "type": "object"
+    },
+    "BrowserOptions": {
+      "additionalProperties": false,
+      "properties": {
+        "scroll_x": {
+          "default": 0,
+          "maximum": 4000,
+          "minimum": -4000,
+          "title": "Scroll X",
+          "type": "integer"
+        },
+        "scroll_y": {
+          "default": 400,
+          "maximum": 4000,
+          "minimum": -4000,
+          "title": "Scroll Y",
+          "type": "integer"
+        },
+        "full_page": {
+          "default": false,
+          "title": "Full Page",
+          "type": "boolean"
+        },
+        "export_format": {
+          "default": "page",
+          "enum": [
+            "page",
+            "dom_snapshot",
+            "pdf",
+            "md",
+            "xlsx",
+            "csv",
+            "docx",
+            "pptx",
+            "youtube_transcript"
+          ],
+          "title": "Export Format",
+          "type": "string"
+        },
+        "asset_kinds": {
+          "items": {
+            "enum": [
+              "font",
+              "image",
+              "stylesheet",
+              "video"
+            ],
+            "type": "string"
+          },
+          "maxItems": 4,
+          "title": "Asset Kinds",
+          "type": "array"
+        },
+        "expected_download_name": {
+          "anyOf": [
+            {
+              "maxLength": 240,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Download Name"
+        },
+        "download_directory": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Download Directory"
+        },
+        "upload_refs": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 19,
+          "title": "Upload Refs",
+          "type": "array"
+        },
+        "allow_close_existing": {
+          "default": false,
+          "title": "Allow Close Existing",
+          "type": "boolean"
+        },
+        "viewport_width": {
+          "anyOf": [
+            {
+              "maximum": 3840,
+              "minimum": 400,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Viewport Width"
+        },
+        "viewport_height": {
+          "anyOf": [
+            {
+              "maximum": 2160,
+              "minimum": 300,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Viewport Height"
+        }
+      },
+      "title": "BrowserOptions",
+      "type": "object"
+    },
+    "Budget": {
+      "additionalProperties": false,
+      "properties": {
+        "steps": {
+          "default": 40,
+          "maximum": 200,
+          "minimum": 1,
+          "title": "Steps",
+          "type": "integer"
+        },
+        "jev_calls": {
+          "default": 8,
+          "maximum": 30,
+          "minimum": 0,
+          "title": "Jev Calls",
+          "type": "integer"
+        },
+        "seconds": {
+          "default": 180,
+          "maximum": 900,
+          "minimum": 5,
+          "title": "Seconds",
+          "type": "integer"
+        },
+        "reobservations": {
+          "default": 3,
+          "maximum": 10,
+          "minimum": 0,
+          "title": "Reobservations",
+          "type": "integer"
+        },
+        "no_progress": {
+          "default": 3,
+          "maximum": 8,
+          "minimum": 1,
+          "title": "No Progress",
+          "type": "integer"
+        }
+      },
+      "title": "Budget",
+      "type": "object"
+    },
+    "InputValue": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "default": "text",
+          "enum": [
+            "text",
+            "path"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 32000,
+          "title": "Value",
+          "type": "string"
+        },
+        "sensitive": {
+          "default": false,
+          "title": "Sensitive",
+          "type": "boolean"
+        },
+        "pending": {
+          "default": false,
+          "title": "Pending",
+          "type": "boolean"
+        },
+        "captured": {
+          "default": false,
+          "title": "Captured",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "InputValue",
+      "type": "object"
+    },
+    "Predicate": {
+      "additionalProperties": false,
+      "properties": {
+        "surface": {
+          "default": "main",
+          "title": "Surface",
+          "type": "string"
+        },
+        "comparison": {
+          "default": "eq",
+          "enum": [
+            "eq",
+            "ne",
+            "gt",
+            "ge",
+            "lt",
+            "le"
+          ],
+          "title": "Comparison",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "exists",
+            "absent",
+            "value",
+            "text",
+            "checked",
+            "url",
+            "file",
+            "tab_count",
+            "attribute"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "attribute": {
+          "anyOf": [
+            {
+              "enum": [
+                "scrollTop",
+                "scrollLeft",
+                "files"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Attribute"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Query"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "equals": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Equals"
+        },
+        "input_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Input Ref"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "Predicate",
+      "type": "object"
+    },
+    "Query": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "automation_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Automation Id"
+        },
+        "frame_url": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Frame Url"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Group"
+        },
+        "semantic": {
+          "default": false,
+          "title": "Semantic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "role"
+      ],
+      "title": "Query",
+      "type": "object"
+    },
+    "Scope": {
+      "additionalProperties": false,
+      "properties": {
+        "programs": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Programs",
+          "type": "array"
+        },
+        "origins": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Origins",
+          "type": "array"
+        },
+        "read_roots": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 12,
+          "title": "Read Roots",
+          "type": "array"
+        },
+        "write_roots": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 12,
+          "title": "Write Roots",
+          "type": "array"
+        },
+        "actions": {
+          "items": {
+            "enum": [
+              "read",
+              "wait",
+              "click",
+              "fill",
+              "select",
+              "check",
+              "uncheck",
+              "scroll",
+              "range",
+              "upload",
+              "download",
+              "switch_tab",
+              "close_tab",
+              "context_click",
+              "drag",
+              "key",
+              "copy",
+              "paste",
+              "double_click",
+              "hover",
+              "navigate",
+              "back",
+              "forward",
+              "reload",
+              "new_tab",
+              "screenshot",
+              "export",
+              "logs",
+              "assets",
+              "dialog_accept",
+              "dialog_dismiss",
+              "clipboard_write",
+              "clipboard_read",
+              "mark_deliverable",
+              "mark_handoff",
+              "viewport_set",
+              "viewport_reset"
+            ],
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Actions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "actions"
+      ],
+      "title": "Scope",
+      "type": "object"
+    },
+    "Step": {
+      "additionalProperties": false,
+      "properties": {
+        "surface": {
+          "default": "main",
+          "pattern": "^[a-zA-Z0-9_-]{1,40}$",
+          "title": "Surface",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-zA-Z0-9_-]{1,48}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "intent": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Intent",
+          "type": "string"
+        },
+        "op": {
+          "enum": [
+            "read",
+            "wait",
+            "click",
+            "fill",
+            "select",
+            "check",
+            "uncheck",
+            "scroll",
+            "range",
+            "upload",
+            "download",
+            "switch_tab",
+            "close_tab",
+            "context_click",
+            "drag",
+            "key",
+            "copy",
+            "paste",
+            "double_click",
+            "hover",
+            "navigate",
+            "back",
+            "forward",
+            "reload",
+            "new_tab",
+            "screenshot",
+            "export",
+            "logs",
+            "assets",
+            "dialog_accept",
+            "dialog_dismiss",
+            "clipboard_write",
+            "clipboard_read",
+            "mark_deliverable",
+            "mark_handoff",
+            "viewport_set",
+            "viewport_reset"
+          ],
+          "title": "Op",
+          "type": "string"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Query"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "destination": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Query"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "output_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output Ref"
+        },
+        "input_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Input Ref"
+        },
+        "effect": {
+          "default": "none",
+          "enum": [
+            "none",
+            "local",
+            "submit",
+            "send",
+            "publish",
+            "pay",
+            "delete",
+            "overwrite",
+            "account"
+          ],
+          "title": "Effect",
+          "type": "string"
+        },
+        "after": {
+          "items": {
+            "$ref": "#/$defs/Predicate"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "After",
+          "type": "array"
+        },
+        "optional_if": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Predicate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_candidates": {
+          "default": 12,
+          "maximum": 24,
+          "minimum": 2,
+          "title": "Max Candidates",
+          "type": "integer"
+        },
+        "browser_options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BrowserOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "intent",
+        "op",
+        "after"
+      ],
+      "title": "Step",
+      "type": "object"
+    },
+    "Target": {
+      "additionalProperties": false,
+      "properties": {
+        "driver": {
+          "enum": [
+            "browser",
+            "windows",
+            "unsupported"
+          ],
+          "title": "Driver",
+          "type": "string"
+        },
+        "connection": {
+          "default": "isolated",
+          "description": "Browser tasks must use official_chrome. Legacy isolated browser requests escalate without launching anything; native Windows ignores this selector.",
+          "enum": [
+            "isolated",
+            "official_chrome"
+          ],
+          "title": "Connection",
+          "type": "string"
+        },
+        "tab_id": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tab Id"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "hwnd": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hwnd"
+        },
+        "process_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Process Id"
+        },
+        "executable": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Executable"
+        },
+        "window_title": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Window Title"
+        },
+        "headless": {
+          "default": true,
+          "deprecated": true,
+          "description": "Legacy compatibility only; never launches a browser",
+          "title": "Headless",
+          "type": "boolean"
+        },
+        "viewport_width": {
+          "default": 1280,
+          "maximum": 3840,
+          "minimum": 400,
+          "title": "Viewport Width",
+          "type": "integer"
+        },
+        "viewport_height": {
+          "default": 720,
+          "maximum": 2160,
+          "minimum": 300,
+          "title": "Viewport Height",
+          "type": "integer"
+        },
+        "device_scale_factor": {
+          "default": 1.0,
+          "maximum": 4.0,
+          "minimum": 0.5,
+          "title": "Device Scale Factor",
+          "type": "number"
+        }
+      },
+      "required": [
+        "driver"
+      ],
+      "title": "Target",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": 1,
+      "default": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "goal": {
+      "maxLength": 600,
+      "minLength": 1,
+      "title": "Goal",
+      "type": "string"
+    },
+    "language": {
+      "default": "en",
+      "enum": [
+        "zh",
+        "ja",
+        "en",
+        "mixed"
+      ],
+      "title": "Language",
+      "type": "string"
+    },
+    "target": {
+      "$ref": "#/$defs/Target"
+    },
+    "targets": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Target"
+      },
+      "maxProperties": 7,
+      "title": "Targets",
+      "type": "object"
+    },
+    "scope": {
+      "$ref": "#/$defs/Scope"
+    },
+    "inputs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/InputValue"
+      },
+      "maxProperties": 40,
+      "title": "Inputs",
+      "type": "object"
+    },
+    "steps": {
+      "items": {
+        "$ref": "#/$defs/Step"
+      },
+      "maxItems": 120,
+      "minItems": 1,
+      "title": "Steps",
+      "type": "array"
+    },
+    "success": {
+      "items": {
+        "$ref": "#/$defs/Predicate"
+      },
+      "maxItems": 12,
+      "minItems": 1,
+      "title": "Success",
+      "type": "array"
+    },
+    "stop_conditions": {
+      "items": {
+        "$ref": "#/$defs/Predicate"
+      },
+      "maxItems": 12,
+      "title": "Stop Conditions",
+      "type": "array"
+    },
+    "authorizations": {
+      "items": {
+        "$ref": "#/$defs/Authorization"
+      },
+      "maxItems": 20,
+      "title": "Authorizations",
+      "type": "array"
+    },
+    "jev_label_allowlist": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 120,
+      "title": "Jev Label Allowlist",
+      "type": "array"
+    },
+    "budget": {
+      "$ref": "#/$defs/Budget"
+    }
+  },
+  "required": [
+    "goal",
+    "target",
+    "scope",
+    "steps",
+    "success"
+  ],
+  "title": "Contract",
+  "type": "object"
+}

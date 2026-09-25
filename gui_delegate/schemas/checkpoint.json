@@ -1,0 +1,90 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "task_id": {
+      "title": "Task Id",
+      "type": "string"
+    },
+    "contract_hash": {
+      "title": "Contract Hash",
+      "type": "string"
+    },
+    "next_step": {
+      "title": "Next Step",
+      "type": "integer"
+    },
+    "completed": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Completed",
+      "type": "array"
+    },
+    "phase": {
+      "enum": [
+        "idle",
+        "dispatched",
+        "verified"
+      ],
+      "title": "Phase",
+      "type": "string"
+    },
+    "pending_step": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Pending Step"
+    },
+    "pending_control_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Pending Control Id"
+    },
+    "before_fingerprint": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Before Fingerprint"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reason"
+    }
+  },
+  "required": [
+    "task_id",
+    "contract_hash",
+    "next_step",
+    "completed",
+    "phase"
+  ],
+  "title": "Checkpoint",
+  "type": "object"
+}

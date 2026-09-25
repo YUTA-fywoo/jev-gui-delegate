@@ -1,0 +1,129 @@
+{
+  "$defs": {
+    "Control": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "automation_id": {
+          "default": "",
+          "title": "Automation Id",
+          "type": "string"
+        },
+        "frame_url": {
+          "default": "",
+          "title": "Frame Url",
+          "type": "string"
+        },
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "visible": {
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "password": {
+          "default": false,
+          "title": "Password",
+          "type": "boolean"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "checked": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Checked"
+        },
+        "attributes": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Attributes",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "name",
+        "enabled",
+        "visible"
+      ],
+      "title": "Control",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "surface": {
+      "default": "main",
+      "title": "Surface",
+      "type": "string"
+    },
+    "sequence": {
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "observed_at": {
+      "title": "Observed At",
+      "type": "number"
+    },
+    "fingerprint": {
+      "title": "Fingerprint",
+      "type": "string"
+    },
+    "location": {
+      "title": "Location",
+      "type": "string"
+    },
+    "controls": {
+      "items": {
+        "$ref": "#/$defs/Control"
+      },
+      "title": "Controls",
+      "type": "array"
+    },
+    "tab_count": {
+      "default": 1,
+      "title": "Tab Count",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "sequence",
+    "observed_at",
+    "fingerprint",
+    "location",
+    "controls"
+  ],
+  "title": "Observation",
+  "type": "object"
+}

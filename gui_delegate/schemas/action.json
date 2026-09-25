@@ -1,0 +1,104 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "step_id": {
+      "title": "Step Id",
+      "type": "string"
+    },
+    "op": {
+      "enum": [
+        "read",
+        "wait",
+        "click",
+        "fill",
+        "select",
+        "check",
+        "uncheck",
+        "scroll",
+        "range",
+        "upload",
+        "download",
+        "switch_tab",
+        "close_tab",
+        "context_click",
+        "drag",
+        "key",
+        "copy",
+        "paste",
+        "double_click",
+        "hover",
+        "navigate",
+        "back",
+        "forward",
+        "reload",
+        "new_tab",
+        "screenshot",
+        "export",
+        "logs",
+        "assets",
+        "dialog_accept",
+        "dialog_dismiss",
+        "clipboard_write",
+        "clipboard_read",
+        "mark_deliverable",
+        "mark_handoff",
+        "viewport_set",
+        "viewport_reset"
+      ],
+      "title": "Op",
+      "type": "string"
+    },
+    "control_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Control Id"
+    },
+    "fingerprint": {
+      "title": "Fingerprint",
+      "type": "string"
+    },
+    "observation_sequence": {
+      "title": "Observation Sequence",
+      "type": "integer"
+    },
+    "input_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Input Ref"
+    },
+    "destination_control_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Destination Control Id"
+    }
+  },
+  "required": [
+    "step_id",
+    "op",
+    "control_id",
+    "fingerprint",
+    "observation_sequence"
+  ],
+  "title": "Action",
+  "type": "object"
+}

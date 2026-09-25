@@ -1,0 +1,107 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "enum": [
+        "running",
+        "completed",
+        "escalated",
+        "needs_confirmation",
+        "paused",
+        "cancelled",
+        "blocked",
+        "failed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "task_id": {
+      "title": "Task Id",
+      "type": "string"
+    },
+    "completed": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Completed",
+      "type": "array"
+    },
+    "remaining": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Remaining",
+      "type": "array"
+    },
+    "evidence_refs": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence Refs",
+      "type": "array"
+    },
+    "usage": {
+      "additionalProperties": true,
+      "title": "Usage",
+      "type": "object"
+    },
+    "escalation_reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Escalation Reason"
+    },
+    "resume_token": {
+      "title": "Resume Token",
+      "type": "string"
+    },
+    "verification": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Verification",
+      "type": "array"
+    },
+    "escalation_context": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Escalation Context"
+    },
+    "routing": {
+      "additionalProperties": true,
+      "title": "Routing",
+      "type": "object"
+    },
+    "tab_cleanup": {
+      "additionalProperties": true,
+      "title": "Tab Cleanup",
+      "type": "object"
+    }
+  },
+  "required": [
+    "status",
+    "task_id",
+    "completed",
+    "remaining",
+    "evidence_refs",
+    "usage",
+    "escalation_reason",
+    "resume_token"
+  ],
+  "title": "Result",
+  "type": "object"
+}

@@ -1,0 +1,15 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "resume_token": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Resume Token",
+      "type": "string"
+    }
+  },
+  "required": [
+    "resume_token"
+  ],
+  "title": "Cancel",
+  "type": "object"
+}
