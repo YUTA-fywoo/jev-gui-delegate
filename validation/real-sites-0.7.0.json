@@ -1,0 +1,498 @@
+{
+  "version": "0.7.0",
+  "date": "2026-09-28",
+  "method": "Fresh subagents received only a natural-language task to use Jev on a real website. No website-specific setup hints, selected candidates, or environment coaching were supplied by the parent.",
+  "scope": "Observed real-site tasks, not a statistical reliability benchmark or production calibration.",
+  "model": "jev-1.13.0",
+  "thresholds": {
+    "probability": 0.97,
+    "confidence": 0.9,
+    "margin": 0.15
+  },
+  "thresholds_calibrated": false,
+  "diagnostics": "Additional model calls against frozen real observations were used for diagnosis; they are excluded from live GUI task totals. Local mocked tests are also separate.",
+  "cases": [
+    {
+      "site": "Bilibili",
+      "phase": "final_runtime",
+      "outcome": "Search, relevant-video selection and complete content retrieval succeeded without Astra selection or GUI action.",
+      "result": {
+        "publication_date": "2023-10-22",
+        "creator": "游戏圈老吴",
+        "title": "米哈游实习经历分享"
+      },
+      "astra_direct_gui_actions": 0,
+      "astra_other_supplements": [],
+      "tasks": [
+        {
+          "task_id": "215cbda41376cb0ad2272ef1f6ebd64f",
+          "status": "completed",
+          "reason": null,
+          "controller_actions": 2,
+          "jev_requests": 0,
+          "http_attempts": 0,
+          "astra_decision_overrides": 0,
+          "verification": [
+            {
+              "condition": 0,
+              "kind": "url_query",
+              "surface": "main",
+              "passed": true,
+              "matched_input_ref": "term"
+            }
+          ],
+          "page": {
+            "url_without_query": "https://search.bilibili.com/all",
+            "title": "米哈游 实习-哔哩哔哩_bilibili",
+            "true_length": 3052,
+            "truncated": false
+          }
+        },
+        {
+          "task_id": "8df9439dfbeeee89897e82567ccf2c5a",
+          "status": "completed",
+          "reason": null,
+          "controller_actions": 1,
+          "jev_requests": 7,
+          "http_attempts": 7,
+          "astra_decision_overrides": 0,
+          "verification": [
+            {
+              "condition": 0,
+              "kind": "url_path_prefix",
+              "surface": "main",
+              "passed": true
+            }
+          ],
+          "page": {
+            "url_without_query": "https://www.bilibili.com/video/BV1nH4y197Z3/",
+            "title": "米哈游实习经历分享_哔哩哔哩_bilibili",
+            "true_length": 1034,
+            "truncated": false
+          }
+        }
+      ],
+      "totals": {
+        "controller_actions": 3,
+        "jev_requests": 7,
+        "http_attempts": 7,
+        "astra_decision_overrides": 0
+      }
+    },
+    {
+      "site": "GitHub",
+      "phase": "final_runtime",
+      "outcome": "Opened latest Spec Kit release and returned complete content, version and visible timestamp.",
+      "result": {
+        "published": "2026-09-25T17:48:57Z",
+        "version": "v1.0.12"
+      },
+      "astra_direct_gui_actions": 0,
+      "astra_other_supplements": [],
+      "tasks": [
+        {
+          "task_id": "075e152b86c514e53fb0ed1d082e5c6a",
+          "status": "completed",
+          "reason": null,
+          "controller_actions": 1,
+          "jev_requests": 11,
+          "http_attempts": 11,
+          "astra_decision_overrides": 0,
+          "verification": [
+            {
+              "condition": 0,
+              "kind": "url_path_prefix",
+              "surface": "main",
+              "passed": true
+            }
+          ],
+          "page": {
+            "url_without_query": "https://github.com/github/spec-kit/releases/tag/v1.0.12",
+            "title": "github/spec-kit: 💫 Toolkit to help you get started with SDD or any other process!",
+            "true_length": 2329,
+            "truncated": false
+          }
+        }
+      ],
+      "totals": {
+        "controller_actions": 1,
+        "jev_requests": 11,
+        "http_attempts": 11,
+        "astra_decision_overrides": 0
+      }
+    },
+    {
+      "site": "Xiaohongshu",
+      "phase": "final_runtime",
+      "outcome": "Search, relevant-note selection and complete content retrieval succeeded. A later optional cleanup task could not close the last bound tab; Astra closed the temporary tab using the official browser API.",
+      "result": {
+        "title": "米哈游捞实习生啦！可九月到岗｜260/天",
+        "author": "进击的鱼蛋(上岸版)",
+        "arrival": "九月；未提供具体日期"
+      },
+      "astra_direct_gui_actions": {
+        "task_search_click_read": 0,
+        "temporary_tab_close": 1
+      },
+      "recovery": "One initial low-confidence pause was resumed in the same task after search results loaded. No candidate override.",
+      "tasks": [
+        {
+          "task_id": "6a0f798d1e16eb8ceb15106cdfbe2b74",
+          "status": "completed",
+          "reason": null,
+          "controller_actions": 1,
+          "jev_requests": 0,
+          "http_attempts": 0,
+          "astra_decision_overrides": 0,
+          "verification": [
+            {
+              "condition": 0,
+              "kind": "tab_count",
+              "surface": "main",
+              "passed": true
+            }
+          ],
+          "page": {
+            "url_without_query": "https://www.xiaohongshu.com/explore",
+            "title": "小红书 - 你的生活兴趣社区",
+            "true_length": 1637,
+            "truncated": false
+          }
+        },
+        {
+          "task_id": "a98bb0c2e9d82bd771cb4e7cacec0767",
+          "status": "completed",
+          "reason": null,
+          "controller_actions": 3,
+          "jev_requests": 12,
+          "http_attempts": 12,
+          "astra_decision_overrides": 0,
+          "verification": [
+            {
+              "condition": 0,
+              "kind": "url_path_prefix",
+              "surface": "main",
+              "passed": true
+            }
+          ],
+          "page": {
+            "url_without_query": "https://www.xiaohongshu.com/explore/6a8c3ac00000000038003317",
+            "title": "米哈游捞实习生啦！可九月到岗｜260/天 - 小红书",
+            "true_length": 3534,
+            "truncated": false
+          }
+        },
+        {
+          "task_id": "67a42b3f1893e06aa837da0fa37edfba",
+          "status": "cancelled",
+          "reason": "CANCELLED",
+          "controller_actions": 0,
+          "jev_requests": 0,
+          "http_attempts": 0,
+          "astra_decision_overrides": 0,
+          "verification": []
+        }
+      ],
+      "totals": {
+        "controller_actions": 4,
+        "jev_requests": 12,
+        "http_attempts": 12,
+        "astra_decision_overrides": 0
+      }
+    },
+    {
+      "site": "GitHub",
+      "phase": "earlier_iteration",
+      "outcome": "Opened latest Spec Kit release and returned version, visible timestamp and release notes.",
+      "result": {
+        "version": "v1.0.12",
+        "published": "2026-09-25T17:48:57Z"
+      },
+      "astra_direct_gui_actions": 0,
+      "recovery": "Invalid model response recovered in the same task without replaying the click.",
+      "tasks": [
+        {
+          "task_id": "54d760b4bd49ae429135ebfc95540793",
+          "status": "completed",
+          "reason": null,
+          "controller_actions": 1,
+          "jev_requests": 11,
+          "http_attempts": 11,
+          "astra_decision_overrides": 0,
+          "verification": [
+            {
+              "condition": 0,
+              "kind": "exists",
+              "surface": "main",
+              "passed": true
+            },
+            {
+              "condition": 1,
+              "kind": "absent",
+              "surface": "main",
+              "passed": true
+            }
+          ],
+          "page": {
+            "url_without_query": "https://github.com/github/spec-kit/releases/tag/v1.0.12",
+            "title": "Release Spec Kit - 1.0.12 · github/spec-kit",
+            "true_length": 2329,
+            "truncated": false
+          }
+        }
+      ],
+      "totals": {
+        "controller_actions": 1,
+        "jev_requests": 11,
+        "http_attempts": 11,
+        "astra_decision_overrides": 0
+      }
+    },
+    {
+      "site": "Bilibili",
+      "phase": "earlier_iteration",
+      "outcome": "Click and content retrieval succeeded, but a broad employment-experience video was selected instead of a direct internship match. This is not counted as a clean semantic pass.",
+      "fix": "Independent eligibility plus official Noul relevance reranking; final execution still requires the original Choice thresholds.",
+      "astra_direct_gui_actions": 0,
+      "tasks": [
+        {
+          "task_id": "bc3e896c218521d9584516ce239f6e8d",
+          "status": "completed",
+          "reason": null,
+          "controller_actions": 2,
+          "jev_requests": 0,
+          "http_attempts": 0,
+          "astra_decision_overrides": 0,
+          "verification": [
+            {
+              "condition": 0,
+              "kind": "url_query",
+              "surface": "main",
+              "passed": true,
+              "matched_input_ref": "term"
+            }
+          ],
+          "page": {
+            "url_without_query": "https://search.bilibili.com/all",
+            "title": "米哈游 实习-哔哩哔哩_bilibili",
+            "true_length": 3054,
+            "truncated": false
+          }
+        },
+        {
+          "task_id": "5ab1aafb506a050b2e590da75a42b085",
+          "status": "completed",
+          "reason": null,
+          "controller_actions": 1,
+          "jev_requests": 6,
+          "http_attempts": 6,
+          "astra_decision_overrides": 0,
+          "verification": [
+            {
+              "condition": 0,
+              "kind": "exists",
+              "surface": "main",
+              "passed": true
+            }
+          ],
+          "page": {
+            "url_without_query": "https://www.bilibili.com/video/BV1QD8szJEGe/",
+            "title": "我真去米哈游入职了! 在这做游戏爽不爽？_哔哩哔哩_bilibili",
+            "true_length": 1347,
+            "truncated": false
+          }
+        }
+      ],
+      "totals": {
+        "controller_actions": 3,
+        "jev_requests": 6,
+        "http_attempts": 6,
+        "astra_decision_overrides": 0
+      }
+    },
+    {
+      "site": "Xiaohongshu",
+      "phase": "earlier_iteration",
+      "outcome": "Astra supplied one candidate selection. The clicked page was valid but verification incorrectly depended on a tracking query parameter; a read-only task recovered the content.",
+      "fix": "Focused Choice confirmation after full-coverage relevance ranking, stable detail-path verification, and explicit documentation against tracking-parameter predicates.",
+      "astra_direct_gui_actions": 0,
+      "astra_other_supplements": [
+        "Read-only verification after inappropriate tracking-parameter predicate"
+      ],
+      "tasks": [
+        {
+          "task_id": "232959efe5e50833aa1a24f454335bb6",
+          "status": "completed",
+          "reason": null,
+          "controller_actions": 2,
+          "jev_requests": 0,
+          "http_attempts": 0,
+          "astra_decision_overrides": 0,
+          "verification": [
+            {
+              "condition": 0,
+              "kind": "url_query",
+              "surface": "main",
+              "passed": true,
+              "matched_input_ref": "term"
+            }
+          ],
+          "page": {
+            "url_without_query": "https://www.xiaohongshu.com/search_result_ai",
+            "title": "米哈游 日常实习 到岗 - 小红书搜索",
+            "true_length": 1772,
+            "truncated": false
+          }
+        },
+        {
+          "task_id": "3645214db33e85b9536d530d7f761155",
+          "status": "completed",
+          "reason": null,
+          "controller_actions": 1,
+          "jev_requests": 0,
+          "http_attempts": 0,
+          "astra_decision_overrides": 0,
+          "verification": [
+            {
+              "condition": 0,
+              "kind": "file",
+              "surface": "main",
+              "passed": true,
+              "matched_input_ref": "out"
+            }
+          ]
+        },
+        {
+          "task_id": "50271051fa0279bcc2477273993f1ecf",
+          "status": "cancelled",
+          "reason": "CANCELLED",
+          "controller_actions": 1,
+          "jev_requests": 8,
+          "http_attempts": 8,
+          "astra_decision_overrides": 1,
+          "verification": []
+        },
+        {
+          "task_id": "a5139f3f20aff4397144d30340be7e34",
+          "status": "completed",
+          "reason": null,
+          "controller_actions": 1,
+          "jev_requests": 0,
+          "http_attempts": 0,
+          "astra_decision_overrides": 0,
+          "verification": [
+            {
+              "condition": 0,
+              "kind": "file",
+              "surface": "main",
+              "passed": true,
+              "matched_input_ref": "out"
+            }
+          ],
+          "page": {
+            "url_without_query": "https://www.xiaohongshu.com/explore/6a8c3ac00000000038003317",
+            "title": "米哈游捞实习生啦！可九月到岗｜260/天 - 小红书",
+            "true_length": 3751,
+            "truncated": false
+          }
+        }
+      ],
+      "totals": {
+        "controller_actions": 5,
+        "jev_requests": 8,
+        "http_attempts": 8,
+        "astra_decision_overrides": 1
+      }
+    },
+    {
+      "site": "Bilibili",
+      "phase": "earlier_iteration",
+      "outcome": "Relevant internship video retrieved with two Astra tab-identity/verification repairs. No selection override or direct click.",
+      "fix": "Follow intermediate search tabs using the verified search value; support observed detail-path prefixes instead of guessed detail-page controls.",
+      "astra_direct_gui_actions": 0,
+      "astra_other_supplements": [
+        "Search-result tab binding",
+        "Read-only detail verification after a guessed absent control"
+      ],
+      "tasks": [
+        {
+          "task_id": "ffc1bbdc306d1e0fb13e8d987ae53f63",
+          "status": "cancelled",
+          "reason": "CANCELLED",
+          "controller_actions": 2,
+          "jev_requests": 8,
+          "http_attempts": 8,
+          "astra_decision_overrides": 0,
+          "verification": []
+        },
+        {
+          "task_id": "9133e1c6220cc1e2d1018ceba98050cd",
+          "status": "cancelled",
+          "reason": "CANCELLED",
+          "controller_actions": 1,
+          "jev_requests": 19,
+          "http_attempts": 19,
+          "astra_decision_overrides": 0,
+          "verification": []
+        },
+        {
+          "task_id": "129d99d5719a1ad860961f8a4ead66c7",
+          "status": "completed",
+          "reason": null,
+          "controller_actions": 0,
+          "jev_requests": 0,
+          "http_attempts": 0,
+          "astra_decision_overrides": 0,
+          "verification": [
+            {
+              "condition": 0,
+              "kind": "url_path",
+              "surface": "main",
+              "passed": true
+            }
+          ],
+          "page": {
+            "url_without_query": "https://www.bilibili.com/video/BV1nH4y197Z3/",
+            "title": "米哈游实习经历分享_哔哩哔哩_bilibili",
+            "true_length": 1290,
+            "truncated": false
+          }
+        }
+      ],
+      "totals": {
+        "controller_actions": 3,
+        "jev_requests": 27,
+        "http_attempts": 27,
+        "astra_decision_overrides": 0
+      }
+    }
+  ],
+  "startup_regressions": [
+    {
+      "error": "process global unavailable in host",
+      "actions": 0,
+      "jev_requests": 0
+    },
+    {
+      "error": "node:process module disallowed in host",
+      "actions": 0,
+      "jev_requests": 0
+    }
+  ],
+  "startup_fix": "Spawn the fixed Python bootstrap with the inherited environment; fill only missing allowlisted nonsecret system keys. Verified in the real host before final real-site tests.",
+  "automated_validation": {
+    "python_gui_tests": 161,
+    "python_core_tests": 30,
+    "installer_and_registration_tests_included": 17,
+    "skill_schema": "PASS",
+    "fresh_physical_machine_install": "NOT_TESTED"
+  },
+  "source_sha256": {
+    "gui_delegate/adaptive.py": "2fc9cfc259216096145eb047de97bb6c343feef403240b3aff54d16a1ca8ea3b",
+    "gui_delegate/chrome_navigation.mjs": "c940b7d1ebdbffacdb3b87d6c8dc56271a0094bf8cee37c2c2ad4b9ef8926b7d",
+    "gui_delegate/chrome_delegate.mjs": "ec7b2e6206677c226569a1a3a62e5abcc68b3c149459ee4fd753b03b65dde770",
+    "gui_delegate/chrome_bootstrap.py": "362465fdc90470bdf306ca284393099ebd51e18a75dea655ff9b18f82333a75c",
+    "gui_delegate/schema.py": "de0ba3e3faad7f54bb3b68a55baeea04a81f8ebfc653313b426acbad01a31cca",
+    "gui_delegate/install.py": "6541b63ae97dbaff50c54ad9a398b95e5538d43658ff2459bba1eb8e45422b11"
+  }
+}
