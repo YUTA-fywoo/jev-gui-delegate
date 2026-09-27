@@ -4,7 +4,7 @@
  * global pointer/system clipboard, browser-profile access, or arbitrary page scripts.
  */
 import {spawn} from 'node:child_process';
-const {ChromeSurfaces,OfficialTabDriver:ChromeTabDriver}=await import(new URL('./chrome_driver.mjs',import.meta.url).href+'?rev=26');
+const {ChromeSurfaces,OfficialTabDriver:ChromeTabDriver}=await import(new URL('./chrome_driver.mjs',import.meta.url).href+'?rev=27');
 export const OfficialTabDriver=ChromeTabDriver;
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';

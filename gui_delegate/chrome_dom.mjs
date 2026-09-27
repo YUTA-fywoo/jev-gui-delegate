@@ -4,6 +4,20 @@ export function stop(reason){const e=new Error(reason);e.safeReason=reason;throw
 export const digest=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 export const quoted=value=>JSON.stringify(value);
 export function readControls(root){
+  // The host's read-only DOM may expose an empty value on every element and
+  // omit isContentEditable. Read the declared/inherited HTML state first.
+  const editable=el=>{
+    for(let current=el;current;current=current.parentElement){
+      const state=current.getAttribute?.('contenteditable')??null;
+      if(state!==null){const value=state.toLowerCase();
+        if(['','true','plaintext-only'].includes(value))return true;
+        if(value==='false')return false;
+      }
+    }
+    return el.isContentEditable===true;
+  };
+  const controlValue=el=>editable(el)?(el.innerText??el.textContent??'').replace(/\r\n?/g,'\n'):
+    ['INPUT','TEXTAREA','SELECT'].includes(el.tagName)&&'value'in el?String(el.value):null;
   const doc=root?.ownerDocument||document;
   const neighborhood=el=>{
     let text='',parent=el.parentElement;
@@ -56,7 +70,7 @@ export function readControls(root){
   const controls=elements.map(el=>{
     const tag=el.tagName.toLowerCase(),type=(el.getAttribute('type')||'').toLowerCase();
     let role=el.getAttribute('role')||({a:'link',button:'button',summary:'button',textarea:'textbox',select:'combobox',h1:'heading',h2:'heading',h3:'heading',h4:'heading',h5:'heading',h6:'heading',table:'table',tr:'row',td:'cell',th:'columnheader',iframe:'iframe',canvas:'canvas',video:'video',img:'image'})[tag];
-    if(!role)role=tag==='input'?({search:'searchbox',checkbox:'checkbox',radio:'radio',range:'slider',file:'file',button:'button',submit:'button'})[type]||'textbox':el.isContentEditable?'textbox':'generic';
+    if(!role)role=tag==='input'?({search:'searchbox',checkbox:'checkbox',radio:'radio',range:'slider',file:'file',button:'button',submit:'button'})[type]||'textbox':editable(el)?'textbox':'generic';
     const refs=(el.getAttribute('aria-labelledby')||'').split(' ').filter(Boolean).map(id=>el.getRootNode().getElementById?.(id)?.textContent||'').join(' ');
     const name=el.getAttribute('aria-label')||refs||(el.labels&&Array.from(el.labels).map(x=>x.textContent).join(' '))||el.getAttribute('alt')||el.getAttribute('title')||el.getAttribute('placeholder')||(['input','textarea','select'].includes(tag)?'':el.innerText||el.textContent)||'';
     const rect=el.getBoundingClientRect(),style=getComputedStyle(el);
@@ -70,7 +84,7 @@ export function readControls(root){
     const publicSearch=['textbox','searchbox'].includes(role)&&searchLike&&(!el.form||((el.form.getAttribute('method')||'get').toLowerCase()==='get'&&!el.form.querySelector('input[type=password]')));
     return {role,name:name.trim().slice(0,300),automation_id:el.id||'',
       enabled:!el.disabled&&el.getAttribute('aria-disabled')!=='true',visible:!!(rect.width&&rect.height)&&style.visibility!=='hidden'&&style.display!=='none',password,
-      value:password?null:('value'in el?String(el.value):el.isContentEditable?el.textContent:null),
+      value:password?null:controlValue(el),
       checked:'checked'in el?el.checked:(el.hasAttribute('aria-checked')?el.getAttribute('aria-checked')==='true':null),
       attributes:{tag,type,group:el.closest('[role=group]')?.getAttribute('aria-label')||'',
         dom_path:framePath(el),context,neighborhood:role==='link'?neighborhood(el):'',readonly:String(!!el.readOnly),selected:el.getAttribute('aria-selected')||'',expanded:el.getAttribute('aria-expanded')||'',
@@ -83,12 +97,26 @@ export function readControls(root){
         min:el.getAttribute('min')||'0',max:el.getAttribute('max')||'100',step:el.getAttribute('step')||'1',
         files:type==='file'?JSON.stringify(Array.from(el.files||[]).map(x=>({name:x.name,size:x.size}))):'',
         scrollTop:String(el.scrollTop),scrollLeft:String(el.scrollLeft),scrollHeight:String(el.scrollHeight),
-        clientHeight:String(el.clientHeight),contenteditable:String(el.isContentEditable)}};
+        clientHeight:String(el.clientHeight),contenteditable:String(editable(el))}};
   });
   return {overflow:false,controls,url:doc.URL};
 }
 
 export function probe(el){
+  // The host's read-only DOM may expose an empty value on every element and
+  // omit isContentEditable. Read the declared/inherited HTML state first.
+  const editable=el=>{
+    for(let current=el;current;current=current.parentElement){
+      const state=current.getAttribute?.('contenteditable')??null;
+      if(state!==null){const value=state.toLowerCase();
+        if(['','true','plaintext-only'].includes(value))return true;
+        if(value==='false')return false;
+      }
+    }
+    return el.isContentEditable===true;
+  };
+  const controlValue=el=>editable(el)?(el.innerText??el.textContent??'').replace(/\r\n?/g,'\n'):
+    ['INPUT','TEXTAREA','SELECT'].includes(el.tagName)&&'value'in el?String(el.value):null;
   const neighborhood=el=>{
     let text='',parent=el.parentElement;
     for(let depth=0;parent&&depth<4;depth++,parent=parent.parentElement){
@@ -104,7 +132,7 @@ export function probe(el){
   const refs=(el.getAttribute('aria-labelledby')||'').split(' ').filter(Boolean).map(id=>el.getRootNode().getElementById?.(id)?.textContent||'').join(' ');
   const name=el.getAttribute('aria-label')||refs||(el.labels&&Array.from(el.labels).map(x=>x.textContent).join(' '))||el.getAttribute('alt')||el.getAttribute('title')||el.getAttribute('placeholder')||(['input','textarea','select'].includes(tag)?'':el.innerText||el.textContent)||'';
   let role=el.getAttribute('role')||({a:'link',button:'button',summary:'button',textarea:'textbox',select:'combobox',h1:'heading',h2:'heading',h3:'heading',h4:'heading',h5:'heading',h6:'heading',table:'table',tr:'row',td:'cell',th:'columnheader',iframe:'iframe',canvas:'canvas',video:'video',img:'image'})[tag];
-  if(!role)role=tag==='input'?({search:'searchbox',checkbox:'checkbox',radio:'radio',range:'slider',file:'file',button:'button',submit:'button'})[type]||'textbox':el.isContentEditable?'textbox':'generic';
+  if(!role)role=tag==='input'?({search:'searchbox',checkbox:'checkbox',radio:'radio',range:'slider',file:'file',button:'button',submit:'button'})[type]||'textbox':editable(el)?'textbox':'generic';
   const container=el.closest('article,section,li,tr,[role=group],[role=dialog],[role=region],[role=listitem]');
   const heading=container?.querySelector?.('h1,h2,h3,h4,h5,h6,[role=heading],legend');
   const landmark=el.closest('nav,[role=navigation],header,footer,aside,[role=menu]');
@@ -112,7 +140,7 @@ export function probe(el){
   return {tag,id:el.id||'',type,role,name:name.trim().slice(0,300),context,neighborhood:role==='link'?neighborhood(el):'',
     password:(el.getAttribute('type')||'').toLowerCase()==='password'||/one-time-code|current-password|new-password/.test(el.getAttribute('autocomplete')||''),
     href:el.href||'',submit:String(!!el.form&&((el.getAttribute('type')||'').toLowerCase()==='submit'||(el.tagName.toLowerCase()==='button'&&!el.hasAttribute('type')))),
-    value:'value'in el?String(el.value):el.isContentEditable?el.textContent:null,
+    value:controlValue(el),
     checked:'checked'in el?el.checked:(el.hasAttribute('aria-checked')?el.getAttribute('aria-checked')==='true':null)};
 }
 
