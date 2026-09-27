@@ -4,7 +4,7 @@
 
 使用本地 JSON 契约，避免将同一完整对象在多个工具调用间重复传递。原生 MCP run_task 优先 `{"contract_path":"C:/absolute/contract.json"}`，兼容旧顶层内联字段。Chrome 始终走 [chrome.md](chrome.md) 的会话网关。两种入口都保留严格 schema、权限、预算、实时观察与后置校验，不接受任意代码/选择器/坐标。
 
-必要字段：goal、target、scope、steps、success。省略有默认值的字段；不要展开 model_dump 后的空字段或全部默认值来构造新任务。完整 schema 在清单 gui_delegate.schemas/contract.json，仅查询实际用到的定义。
+步骤模式的必要字段：goal、target、scope、steps、success。公开网页可改用 [目标模式](browser-goals.md)，省略 steps。省略有默认值的字段；不要展开 model_dump 后的空字段或全部默认值来构造新任务。完整 schema 在清单 gui_delegate.schemas/contract.json，仅查询实际用到的定义。
 
 - target：browser 用 connection:"official_chrome"、url；已有标签加 tab_id。windows 用 hwnd、process_id、executable、window_title 的真实当前身份。不能凭标题猜窗口；没有身份证据则先补证据。
 - scope：actions 为本任务操作白名单；origins 为协议+主机+端口；programs/read_roots/write_roots 按任务授权填入。网页不能扩大范围。

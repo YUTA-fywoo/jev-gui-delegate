@@ -2,12 +2,12 @@
 
 网页 GUI 优先使用用户已连接的官方 Chrome Browser Use API 和本地 Jev 控制器。首次遵循 cua_repl 的浏览器选择规则，复用已有绑定。本地 MCP 无法单独持有官方浏览器会话。
 
-按 [protocol.md](protocol.md) 写本地契约。target 使用 driver:browser、connection:official_chrome 和当前 URL；已有标签加观察得到的 tab_id，认领但不刷新。不填 tab_id 则在用户 Chrome 新建页。规划所需结构优先通过委派局部 read/export 获取；仅当执行器无法提供必要信息时补充最小范围直接观察。
+公开网页优先按 [browser-goals.md](browser-goals.md) 写目标契约，由运行时发现控件并逐步执行。需要预设复杂操作或处理私有内容时使用 [protocol.md](protocol.md) 的步骤契约。target 使用 driver:browser、connection:official_chrome 和当前 URL；已有标签加观察得到的 tab_id，认领但不刷新。不填 tab_id 则在用户 Chrome 新建页。规划所需结构优先通过委派局部 read/export 获取；仅当执行器无法提供必要信息时补充最小范围直接观察。
 
 首次初始化（本机路径；其他安装以清单为准）：
 
 ```js
-let jevStrictGateway = await import("file:///C:/jev/jev-bridge/gui_delegate/chrome_gateway.mjs?release=0.4.3");
+let jevStrictGateway = await import("file:///C:/jev/jev-bridge/gui_delegate/chrome_gateway.mjs?release=0.7.0");
 ```
 
 推荐保留如下标准入口；变量名中的 Strict 是现有接口名称，不代表仍启用强制拦截：

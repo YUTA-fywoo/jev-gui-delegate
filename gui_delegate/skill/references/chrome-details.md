@@ -9,7 +9,7 @@
 3. 将契约保存为本地绝对路径 JSON。委派时在 `mcp__cua_repl.js` 推荐使用下面的标准调用（`chromeConnection` 是已经选定的 Chrome 对象，替换为实际绑定名；模块地址使用清单中的实际路径）。示例中的 request 使用 JSON 字面量，网关输出精简结果。保留标准入口以便维护；接手时可直接使用当前官方工具，无需绕行旧适配器。
 
 ```js
-let jevStrictGateway = await import("file:///C:/jev/jev-bridge/gui_delegate/chrome_gateway.mjs?release=0.4.3");
+let jevStrictGateway = await import("file:///C:/jev/jev-bridge/gui_delegate/chrome_gateway.mjs?release=0.7.0");
 ```
 
 上面是首次初始化单独调用；后续每次只调用已绑定的入口（不要重新导入）：
