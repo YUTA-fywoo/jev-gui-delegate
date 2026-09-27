@@ -211,6 +211,40 @@
       "title": "Budget",
       "type": "object"
     },
+    "GoalOptions": {
+      "additionalProperties": false,
+      "properties": {
+        "input_refs": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 12,
+          "title": "Input Refs",
+          "type": "array"
+        },
+        "search_submit_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Search Submit Ref"
+        },
+        "batch_size": {
+          "default": 16,
+          "maximum": 24,
+          "minimum": 2,
+          "title": "Batch Size",
+          "type": "integer"
+        }
+      },
+      "title": "GoalOptions",
+      "type": "object"
+    },
     "InputValue": {
       "additionalProperties": false,
       "properties": {
@@ -242,6 +276,12 @@
           "default": false,
           "title": "Captured",
           "type": "boolean"
+        },
+        "purpose": {
+          "default": "",
+          "maxLength": 160,
+          "title": "Purpose",
+          "type": "string"
         }
       },
       "required": [
@@ -279,12 +319,29 @@
             "text",
             "checked",
             "url",
+            "url_path",
+            "url_path_prefix",
+            "url_query",
             "file",
             "tab_count",
-            "attribute"
+            "attribute",
+            "changed"
           ],
           "title": "Kind",
           "type": "string"
+        },
+        "parameter": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parameter"
         },
         "attribute": {
           "anyOf": [
@@ -359,6 +416,19 @@
           "minLength": 1,
           "title": "Role",
           "type": "string"
+        },
+        "control_id": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Control Id"
         },
         "name": {
           "anyOf": [
@@ -676,6 +746,32 @@
             }
           ],
           "default": null
+        },
+        "planned_fingerprint": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Planned Fingerprint"
+        },
+        "planned_guard": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Planned Guard"
         }
       },
       "required": [
@@ -837,6 +933,27 @@
       "title": "Goal",
       "type": "string"
     },
+    "mode": {
+      "default": "steps",
+      "enum": [
+        "steps",
+        "goal"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "observation_policy": {
+      "default": "allowlist",
+      "enum": [
+        "allowlist",
+        "public_ui"
+      ],
+      "title": "Observation Policy",
+      "type": "string"
+    },
+    "goal_options": {
+      "$ref": "#/$defs/GoalOptions"
+    },
     "language": {
       "default": "en",
       "enum": [
@@ -875,7 +992,6 @@
         "$ref": "#/$defs/Step"
       },
       "maxItems": 120,
-      "minItems": 1,
       "title": "Steps",
       "type": "array"
     },
@@ -920,7 +1036,6 @@
     "goal",
     "target",
     "scope",
-    "steps",
     "success"
   ],
   "title": "Contract",

@@ -90,6 +90,19 @@
       "additionalProperties": true,
       "title": "Tab Cleanup",
       "type": "object"
+    },
+    "page": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Page"
     }
   },
   "required": [
