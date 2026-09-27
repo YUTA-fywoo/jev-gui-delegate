@@ -2,7 +2,7 @@
 import path from 'node:path';
 const {watchNavigation,followNavigation}=await import(new URL('./chrome_navigation.mjs',import.meta.url).href+'?rev=3');
 const {TaskTabs}=await import(new URL('./chrome_tabs.mjs',import.meta.url).href+'?rev=2');
-const {readControls,probe,geometry,frameSelectors,frameIdentity,quoted,digest,stop}=await import(new URL('./chrome_dom.mjs',import.meta.url).href+'?rev=10');
+const {readControls,probe,geometry,frameSelectors,frameIdentity,quoted,digest,stop}=await import(new URL('./chrome_dom.mjs',import.meta.url).href+'?rev=11');
 const {permittedFile,writeArtifact,copyArtifact,writeScreenshot}=await import(new URL('./chrome_artifacts.mjs',import.meta.url).href+'?rev=2');
 
 export const OPERATIONS=new Set(['read','wait','copy','click','fill','check','uncheck','select','context_click','key','paste','double_click','hover','scroll','range','drag','upload','download','switch_tab','close_tab','navigate','new_tab','back','forward','reload','screenshot','export','logs','assets','dialog_accept','dialog_dismiss','clipboard_write','clipboard_read','mark_deliverable','mark_handoff','viewport_set','viewport_reset']);

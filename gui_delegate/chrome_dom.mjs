@@ -16,8 +16,15 @@ export function readControls(root){
     }
     return el.isContentEditable===true;
   };
-  const controlValue=el=>editable(el)?(el.innerText??el.textContent??'').replace(/\r\n?/g,'\n'):
-    ['INPUT','TEXTAREA','SELECT'].includes(el.tagName)&&'value'in el?String(el.value):null;
+  const controlValue=el=>{
+    if(editable(el)){
+      const text=(el.innerText??el.textContent??'').replace(/\r\n?/g,'\n');
+      // Empty editors often contain only a layout BR; preserve actual spaces
+      // and newlines in text nodes, and never hide embedded visible media.
+      return el.textContent===''&&/^\n*$/.test(text)&&!el.querySelector?.('img,svg,video,audio,canvas,iframe,object,embed')?'':text;
+    }
+    return ['INPUT','TEXTAREA','SELECT'].includes(el.tagName)&&'value'in el?String(el.value):null;
+  };
   const doc=root?.ownerDocument||document;
   const neighborhood=el=>{
     let text='',parent=el.parentElement;
@@ -115,8 +122,15 @@ export function probe(el){
     }
     return el.isContentEditable===true;
   };
-  const controlValue=el=>editable(el)?(el.innerText??el.textContent??'').replace(/\r\n?/g,'\n'):
-    ['INPUT','TEXTAREA','SELECT'].includes(el.tagName)&&'value'in el?String(el.value):null;
+  const controlValue=el=>{
+    if(editable(el)){
+      const text=(el.innerText??el.textContent??'').replace(/\r\n?/g,'\n');
+      // Empty editors often contain only a layout BR; preserve actual spaces
+      // and newlines in text nodes, and never hide embedded visible media.
+      return el.textContent===''&&/^\n*$/.test(text)&&!el.querySelector?.('img,svg,video,audio,canvas,iframe,object,embed')?'':text;
+    }
+    return ['INPUT','TEXTAREA','SELECT'].includes(el.tagName)&&'value'in el?String(el.value):null;
+  };
   const neighborhood=el=>{
     let text='',parent=el.parentElement;
     for(let depth=0;parent&&depth<4;depth++,parent=parent.parentElement){
