@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/jkudish/jev-browser",
+  "commit": "5112871c9cb553ce33e4f9fb38fc52410e7d4623",
+  "source": "src/navigate.ts",
+  "adopted": [
+    "settle",
+    "extractPayload",
+    "pendingPage follow after navigation; official metadata reconciliation with existing-tab exclusion"
+  ],
+  "adaptation": "Official Codex browser API; read-only evaluation; bounded public page text returned before tab cleanup.",
+  "source_sha256": "4ae38e74835b7571d6c8bde3b885f71168497048b3c9e8ad969c9f1aef0a8e55"
+}
