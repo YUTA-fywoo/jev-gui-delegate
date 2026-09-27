@@ -33,5 +33,16 @@ try{
   value=read([cardLink]).controls[0];assert.equal(value.attributes.neighborhood,'Reference guide Maintainer · 2026-09-25');assert.equal(probe(cardLink).neighborhood,value.attributes.neighborhood);checks++;
   card.querySelector=()=>({tagName:'INPUT'});assert.equal(read([cardLink]).controls[0].attributes.neighborhood,'');checks++;
   card.querySelector=()=>null;card.innerText='x'.repeat(301);assert.equal(read([cardLink]).controls[0].attributes.neighborhood,'');checks++;
+  const rich=element('DIV',{'contenteditable':'true','aria-label':'Post'},{value:'',isContentEditable:undefined,innerText:'Line one\nLine two',textContent:'Line oneLine two'});
+  value=read([rich]).controls[0];assert.equal(value.value,'Line one\nLine two');assert.equal(value.role,'textbox');assert.equal(value.attributes.contenteditable,'true');checks++;
+  assert.equal(probe(rich).value,value.value);assert.equal(probe(rich).role,value.role);checks++;
+  const plain=element('DIV',{'contenteditable':'plaintext-only'},{value:'',innerText:'Plain\ntext',textContent:'Plaintext'});
+  assert.equal(read([plain]).controls[0].value,'Plain\ntext');checks++;
+  const inherited=element('SPAN',{'role':'textbox'},{parentElement:rich,value:'',innerText:'Inherited',textContent:'Inherited'});
+  assert.equal(read([inherited]).controls[0].value,'Inherited');checks++;
+  const stopped=element('DIV',{'contenteditable':'false'},{parentElement:rich,value:'',innerText:'Read only'});
+  assert.equal(read([stopped]).controls[0].value,null);assert.equal(read([stopped]).controls[0].attributes.contenteditable,'false');checks++;
+  const input=element('INPUT',{type:'text'},{value:'Existing value'});
+  assert.equal(read([input]).controls[0].value,'Existing value');assert.equal(probe(input).value,'Existing value');checks++;
 }finally{if(previous===undefined)delete globalThis.getComputedStyle;else globalThis.getComputedStyle=previous;}
 console.log(JSON.stringify({status:'PASS',checks,mode:'controlled DOM; hidden content, placeholders, search identity, context and explicit overflow'}));
