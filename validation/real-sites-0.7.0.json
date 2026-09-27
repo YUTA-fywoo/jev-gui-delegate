@@ -490,18 +490,23 @@
   "release_source_note": "Three real-site passes preceded the final rich-text readback patch. The patch was verified on the real X draft and by DOM, adapter and frame checks; the three complete flows were not repeated after it.",
   "richtext_followup": {
     "site": "X",
-    "added_regression_checks": 6,
+    "added_regression_checks": 9,
     "failed_before_publish_task": "e6ee5a6dfe11fed323b521c936e7714b",
     "astra_diagnostic_dom_read": 1,
     "verification": "Full existing post text including newlines matched original input; no refill and no publish in verification task",
     "read_only_verification_task": "7f76ca40ea860a7aa9c5b2facc8f53c4",
-    "jev_requests": 0
+    "jev_requests": 0,
+    "empty_editor_diagnostic_dom_read": 1,
+    "empty_editor_actual_verification_task": "7504dd3fe06bfcf332c03cb8feab9b28",
+    "publication_task": "aecc327a73f267d672ca57bf39d7c2dc",
+    "publication": "One actual publish click. Visible post confirmed; empty-editor layout newline initially caused a false failed postcondition. No publish replay.",
+    "post_url": "https://x.com/YUTAYYDS/status/2104319738726002890"
   },
   "source_sha256": {
     "gui_delegate/adaptive.py": "2fc9cfc259216096145eb047de97bb6c343feef403240b3aff54d16a1ca8ea3b",
-    "gui_delegate/chrome_dom.mjs": "47a3ee2f412a9303127d26b4329658d0295fff7d34d5030e737b907dcace69ce",
+    "gui_delegate/chrome_dom.mjs": "f0582f44e573e60d1c8261655a0e65f8776f2cb80aff6c71b02579fcbc97c793",
     "gui_delegate/chrome_navigation.mjs": "c940b7d1ebdbffacdb3b87d6c8dc56271a0094bf8cee37c2c2ad4b9ef8926b7d",
-    "gui_delegate/chrome_delegate.mjs": "cdbb3175ec130dff8e998bc957fd288fa37d940b2f55616bd2617b6219b839c6",
+    "gui_delegate/chrome_delegate.mjs": "d0cf9ce72a3a7e2f28e44fd997c48cfcdfa6b9cab1b6bacfee2a0ba579a098e2",
     "gui_delegate/chrome_bootstrap.py": "362465fdc90470bdf306ca284393099ebd51e18a75dea655ff9b18f82333a75c",
     "gui_delegate/schema.py": "de0ba3e3faad7f54bb3b68a55baeea04a81f8ebfc653313b426acbad01a31cca",
     "gui_delegate/install.py": "6541b63ae97dbaff50c54ad9a398b95e5538d43658ff2459bba1eb8e45422b11"
