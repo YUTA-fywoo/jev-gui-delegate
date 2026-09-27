@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/browser-use/jev-ultrafast",
+  "commit": "1231850a0bf1a0c0341fe408ef1668dbbfdfac46",
+  "source": [
+    "jev_ultrafast/snapshot.js",
+    "jev_ultrafast/browser.py"
+  ],
+  "adopted": "page_key + selected target guard; keep form state and target context, ignore unrelated page changes",
+  "adaptation": "Observed CUA DOM paths instead of writing node IDs into the page; scope and current locator identity remain locally checked."
+}
