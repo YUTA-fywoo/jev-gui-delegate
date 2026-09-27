@@ -1,4 +1,6 @@
-# Jev GUI Delegate 0.4.0
+# Jev GUI Delegate 0.7.0
+
+当前安装与公开验证以根目录 [README](../README.md) 和 [VALIDATION](../VALIDATION.md) 为准。以下包含早期实现背景；当前公开网页使用目标模式，Hook 非拦截，安装器支持含空格路径，并且不附带本机校准文件。
 
 本机已安装可运行的有限范围原型：Astra 下发一次任务契约，本地控制器连续观察、产生候选、按需调用 Jev、检查权限、执行并核对真实结果。完成、出现缺口或达到预算后返回简短结果。没有在执行器内部调用 Astra 或其他生成式模型。
 
@@ -18,7 +20,7 @@
 
 实时控件树、任务输入、跨窗口捕获值和检查点只保存在 ACL 限制的 `private/`，由当前 Windows 用户 DPAPI 加密。默认无截图。`copy` 将观测到的非秘密值保存为本地引用；显式 `paste` 临时写入剪贴板、读回核对并在进入 GUI 驱动前恢复，再用控件语义接口填写。支持可完整备份的 HGLOBAL 格式；图片句柄等无法可靠备份时在修改前拒绝。普通事件日志只保留标量、ID、哈希和用量。运行 `python -m gui_delegate.cli cleanup` 清理超过七天且不活跃的任务；未建立后台定时任务。
 
-密钥仍只取 `TYPESAFE_API_KEY` 或 Windows Credential Manager 的 `Codex/jev-bridge/TYPESAFE_API_KEY`。完整界面、输入值、密码/验证码/秘密均不提交 Jev；标签需明确允许列表。当前固定 Jev 为 `jev-1.13.0`。828 个真实合成评估用例支持两处适度放宽，已保存至 `decision-policy.json` 供后续对话复用；其他范围保留原值，`production_calibrated=false`。模型/协议/范围不匹配时不沿用旧策略。普通使用不重新校准、不自动修改阈值；本次没有增加每次决策的 Jev 请求数。结果、失败与局限见 [CALIBRATION.md](CALIBRATION.md)。
+密钥只取 `TYPESAFE_API_KEY` 或 Windows Credential Manager 的 `Codex/jev-bridge/TYPESAFE_API_KEY`。整页正文和输入值不提交 Jev；公开目标模式使用过滤后的控件文字、链接路径及有界邻近上下文，私有页面使用明确观察范围。模型固定为 `jev-1.13.0`。0.7.0 的公开目标模式使用未降低的工程默认门槛，`production_calibrated=false`；重排与聚焦恢复的请求按实际计数。早期合成校准背景见 [CALIBRATION.md](CALIBRATION.md)，不代表公开包或所有网站已校准。
 
 0.2 新增有证据的网页拖放、分组语义检索、命名窗口/页面间本地值传递、原生滑块与滚动、跨源合成 iframe，以及隔离 Electron UIA 验收。原生坐标拖放、任意应用启动/长程规划、官方 Chrome 未封装的操作仍需局部接管。完整实际范围见 [SUPPORT.md](SUPPORT.md)。
 
@@ -33,7 +35,7 @@ Electron 仅作隔离测试夹具，锁定 44.4.4，不是第二套模型或 Jev
 - `gui-uninstall.cmd` 急停并撤销本 skill、路由段、窄 Hook 与四个任务工具；保留原有 Jev 判断接口、源码、环境和凭据。`gui-restore.cmd` 重装并清除 STOP。修改前备份在实际 CODEX_HOME 的 `backups/jev-bridge`；用户后续改动发生冲突会保留并报错。
 - 仅撤销此次阈值策略及 Jev 版本固定：`jev-calibration-rollback.cmd`；重新启用：`jev-calibration-restore.cmd`。语义歧义检查修复、源码和测试证据保留。这两项操作及重复执行均已实际验证。
 
-重复安装、撤销、恢复和无关配置保留已实测。Hook 通过 Codex 正常审阅完成信任；未绕过审批、关闭安全设置或修改二进制。若未来 Hook 定义改变，必须重新正常审阅。安装路径目前限本机已验证的无空格项目路径；压缩包是可恢复的完整源码，不宣称任意宿主即插即用。
+重复安装、升级和无关配置保留有隔离回归测试。当前 Hook 为非拦截路由，不改变宿主本身的权限规则。安装器支持含空格目录；压缩包是完整源码安装包，仍需兼容的 Windows、Python、Node、Codex 宿主和用户自己的 TypeSafe 密钥。
 
 验收看 `reports/acceptance.json`，逐项范围看 [SUPPORT.md](SUPPORT.md)，实际成本对照看 [BENCHMARK.md](BENCHMARK.md)（0.1 历史实测，未重测 0.2 费用）。
 

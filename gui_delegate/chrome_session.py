@@ -51,7 +51,9 @@ class StdioBrowserSession:
         if not response['ok']:
             reason=response.get('error')
             if reason not in SAFE_ERRORS:reason='CHROME_DRIVER_ERROR'
-            status='paused' if reason in ('USER_TAKEOVER','CHROME_SESSION_INTERRUPTED') else 'escalated'
+            # A fixed output path cannot be changed by resume. Return a terminal
+            # conflict and release the task lock; preserve the existing file.
+            status='blocked' if reason=='CHROME_OUTPUT_EXISTS' else 'paused' if reason in ('USER_TAKEOVER','CHROME_SESSION_INTERRUPTED') else 'escalated'
             raise Stop(reason,status)
         return response.get('value')
     def check_segment(self):
@@ -69,7 +71,7 @@ class ChromeSessionDriver:
         self.lifecycle_checkpoints=isinstance(bound,dict) and bound.get('lifecycle_checkpoints') is True
     def observe(self):
         data=self.session.exchange('observe',{})
-        if not isinstance(data,dict) or set(data)-{'url','controls','tab_count'} or not {'url','controls'}<=set(data) or len(data['controls'])>600:
+        if not isinstance(data,dict) or set(data)-{'url','controls','tab_count'} or not {'url','controls'}<=set(data) or len(data['controls'])>2400:
             raise Stop('CHROME_PROTOCOL_INVALID','blocked')
         check_url(data['url'],self.contract)
         controls=[Control.model_validate(c) for c in data['controls']]

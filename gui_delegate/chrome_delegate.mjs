@@ -4,27 +4,21 @@
  * global pointer/system clipboard, browser-profile access, or arbitrary page scripts.
  */
 import {spawn} from 'node:child_process';
-const {ChromeSurfaces,OfficialTabDriver:ChromeTabDriver}=await import(new URL('./chrome_driver.mjs',import.meta.url).href+'?rev=14');
+const {ChromeSurfaces,OfficialTabDriver:ChromeTabDriver}=await import(new URL('./chrome_driver.mjs',import.meta.url).href+'?rev=26');
 export const OfficialTabDriver=ChromeTabDriver;
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
-import {readFileSync,existsSync} from 'node:fs';
+const {settle,capturePublicPage}=await import(new URL('./chrome_page.mjs',import.meta.url).href+'?rev=3');
+import {existsSync} from 'node:fs';
 
 const ROOT=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const PYTHON=path.join(ROOT,'.venv','Scripts','python.exe');
 const sessions=new Map();
 function fail(reason){const e=new Error(reason);e.safeReason=reason;throw e;}
-function environment(){
-  const source=JSON.parse(readFileSync(path.join(ROOT,'gui_delegate','chrome-runtime.json'),'utf8')).env;
-  const out={PYTHONUTF8:'1'};
-  for(const key of ['PATH','SYSTEMROOT','SYSTEMDRIVE','WINDIR','PROGRAMFILES','PROGRAMFILES(X86)',
-    'PROGRAMW6432','TEMP','TMP','USERPROFILE','APPDATA','LOCALAPPDATA']){
-    if(typeof source[key]==='string')out[key]=source[key];
-  }
-  return out;
-}
-function child(){return spawn(PYTHON,['-u','-m','gui_delegate.chrome_worker'],{
-  cwd:ROOT,env:environment(),windowsHide:true,stdio:['pipe','pipe','pipe'],shell:false});}
+// Inherit the host process environment without accessing a banned node:process
+// module. The fixed Python bootstrap fills only missing nonsecret system keys.
+function child(){return spawn(PYTHON,['-u','-m','gui_delegate.chrome_bootstrap'],{
+  cwd:ROOT,windowsHide:true,stdio:['pipe','pipe','pipe'],shell:false});}
 function send(p,message){if(!p.stdin.writable)fail('CHROME_SESSION_DISCONNECTED');p.stdin.write(JSON.stringify(message)+'\n');}
 
 function cleanError(error){
@@ -33,6 +27,18 @@ function cleanError(error){
   // Inspect locally, never return raw exception strings which can contain page data.
   if(/interrupt|user.*control|user.*took over|stopp?ed.*extension|extension.*stopp?ed|turn.*ended|session.*ended/i.test(String(error?.message||'')))return 'CHROME_SESSION_INTERRUPTED';
   return 'CHROME_DRIVER_ERROR';
+}
+
+export async function navigateInitial(tab,url){
+  try{await tab.goto(url);return false;}
+  catch(error){
+    // A navigation timeout can occur after the target page is already present.
+    // Reconcile identity read-only; do not repeat goto or resume an interruption.
+    if(cleanError(error)==='CHROME_DRIVER_ERROR'&&!existsSync(path.join(ROOT,'gui_delegate','private','STOP'))){
+      try{if(await tab.url()===url&&!await tab.getJsDialog())return true;}catch{}
+    }
+    throw error;
+  }
 }
 
 // Stream callbacks only enqueue protocol data. Browser API calls are executed
@@ -90,13 +96,21 @@ async function pump(state){
 }
 
 async function finish(state){
+  // Deliver observed page content before owned navigation tabs are cleaned up.
+  // As in the upstream payload API, completion and extraction are separate facts.
+  const contract=state.driver.contract;
+  if(state.latest.status==='completed'&&contract?.observation_policy==='public_ui'&&!state.pageCaptured){
+    state.pageCaptured=true;
+    try{state.latest.page=await capturePublicPage(state.driver.tab,contract.scope.origins);}
+    catch{state.latest.page_read_error='FINAL_PAGE_CONTENT_UNAVAILABLE';}
+  }
   const terminal=['completed','cancelled','failed','blocked'].includes(state.latest.status);
   try{state.latest.tab_cleanup=await state.driver.cleanup({terminal,reason:state.latest.escalation_reason});}
   catch{state.latest={...state.latest,status:'blocked',escalation_reason:'CHROME_VIEWPORT_RESTORE_REQUIRED',tab_cleanup:{...state.driver.lifecycle.summary(),warning:'CHROME_VIEWPORT_RESTORE_REQUIRED'}};}
   await state.driver.lifecycle.handoffRetained(state.latest.escalation_reason);
   const stats=state.driver.lifecycle.stats();state.latest.usage={...state.latest.usage,...stats};
   if(state.token){
-    try{await control('record_chrome_cleanup',{resume_token:state.token,stats});}
+    try{await control('record_chrome_cleanup',{resume_token:state.token,stats,...(state.latest.page?{page:state.latest.page}:{})});}
     catch{state.latest.tab_cleanup.log_status='unavailable';}
   }
   return state.latest;
@@ -117,7 +131,7 @@ export async function run_task({tab,browser,contract}){
   checkedContract.target.tab_id=existingId||'new-tab-preflight';
   for(const target of Object.values(checkedContract.targets||{}))if(target.connection==='official_chrome'&&!target.tab_id)target.tab_id='new-tab-preflight';
   const preflight=await control('validate_chrome_contract',{contract:checkedContract});
-  const stopped=reason=>({status:'escalated',completed:[],remaining:(checkedContract.steps||[]).map(s=>s.id),evidence_refs:[],usage:{},escalation_reason:reason,resume_token:null});
+  const stopped=reason=>({status:'escalated',completed:[],remaining:checkedContract.mode==='goal'?['goal']:(checkedContract.steps||[]).map(s=>s.id),evidence_refs:[],usage:{actions:0,jev_requests:0,http_attempts:0},escalation_reason:reason,resume_token:null});
   if(!preflight.valid){
     if(preflight.resume_token){const {valid,...result}=preflight;return result;}
     return {...stopped(preflight.reason),status:preflight.status||'blocked'};
@@ -131,8 +145,14 @@ export async function run_task({tab,browser,contract}){
       if(!existing)fail('CHROME_TAB_CLOSED');
       tab=await browser.user.claimTab(existing);
     }
-    else {tab=await browser.tabs.new();openedHere=true;await tab.goto(checkedContract.target.url);}
+    else {tab=await browser.tabs.new();openedHere=true;await navigateInitial(tab,checkedContract.target.url);}
     checkedContract.target.tab_id=String(tab.id);
+    if(checkedContract.observation_policy==='public_ui'){
+      await settle(tab);
+      const arrived=await tab.url();
+      if(!checkedContract.scope.origins.includes(new URL(arrived).origin))fail('CHROME_ORIGIN_DENIED');
+      checkedContract.target.url=arrived;
+    }
   }}catch(error){
     const result=stopped(cleanError(error));
     if(openedHere){

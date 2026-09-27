@@ -32,11 +32,16 @@ export class TaskTabs{
     }
   }
   checkpoint(completed){
+    if(this.contract.mode==='goal'){
+      if(completed.length<this.completed.length||completed.some((id,i)=>id!=='goal_'+String(i+1).padStart(3,'0')))stop('CHROME_CHECKPOINT_INVALID');
+      this.completed=[...completed];return;
+    }
     const expected=this.contract.steps.slice(0,completed.length).map(s=>s.id);
     if(completed.length<this.completed.length||JSON.stringify(completed)!==JSON.stringify(expected))stop('CHROME_CHECKPOINT_INVALID');
     this.completed=[...completed];
   }
   needed(r,surfaces){
+    if(this.contract.mode==='goal')return true;
     const name=[...surfaces.drivers].find(([,d])=>d===r.driver)?.[0];
     const future=this.contract.steps.slice(this.completed.length);
     const steps=future.filter(s=>(s.surface||'main')===name);

@@ -32,6 +32,15 @@ def main():
             stats=args['stats'];allowed={'tabs_created','tabs_closed_during_run','tabs_closed_at_end','tabs_closed_explicitly','tabs_peak_owned','tabs_retained','tabs_cleanup_deferred'}
             if set(stats)!=allowed or any(type(v) is not int or not 0<=v<=1000 for v in stats.values()):raise ValueError('invalid counters')
             result=storage.read(directory/'result.dpapi');result['usage'].update(stats)
+            if 'page' in args:
+                page=args['page']
+                if request['contract'].get('observation_policy')!='public_ui' or result['status']!='completed':raise ValueError('page payload not authorized')
+                if set(page)!={'url','title','format','content','true_length','truncated','tab_id'} or page['format']!='text':raise ValueError('invalid page payload')
+                if not isinstance(page['tab_id'],str) or not page['tab_id']:raise ValueError('invalid final tab identity')
+                if not isinstance(page['content'],str) or len(page['content'])>16000 or type(page['true_length']) is not int or type(page['truncated']) is not bool:raise ValueError('invalid page bounds')
+                from .security import check_url
+                check_url(page['url'],Contract.model_validate(request['contract']))
+                result['page']=page
             storage.save(directory/'result.dpapi',result);storage.event(directory,'browser_tabs_final',**stats)
             print(json.dumps({'recorded':True}));return
         if operation=='validate_chrome_contract':

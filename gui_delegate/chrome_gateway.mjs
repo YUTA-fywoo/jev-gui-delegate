@@ -4,7 +4,7 @@
  */
 import {readFileSync,lstatSync} from 'node:fs';
 import path from 'node:path';
-const delegate=await import(new URL('./chrome_delegate.mjs',import.meta.url).href+'?strict=4');
+const delegate=await import(new URL('./chrome_delegate.mjs',import.meta.url).href+'?strict=18');
 
 function fail(reason){const e=new Error(reason);e.safeReason=reason;throw e;}
 function keys(value,allowed){

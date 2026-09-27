@@ -1,7 +1,8 @@
 /** Whitelisted task operations over the installed official Chrome APIs. */
 import path from 'node:path';
-import {TaskTabs} from './chrome_tabs.mjs';
-import {readControls,probe,geometry,frameSelector,quoted,digest,stop} from './chrome_dom.mjs';
+const {watchNavigation,followNavigation}=await import(new URL('./chrome_navigation.mjs',import.meta.url).href+'?rev=3');
+const {TaskTabs}=await import(new URL('./chrome_tabs.mjs',import.meta.url).href+'?rev=2');
+const {readControls,probe,geometry,frameSelectors,frameIdentity,quoted,digest,stop}=await import(new URL('./chrome_dom.mjs',import.meta.url).href+'?rev=9');
 const {permittedFile,writeArtifact,copyArtifact,writeScreenshot}=await import(new URL('./chrome_artifacts.mjs',import.meta.url).href+'?rev=2');
 
 export const OPERATIONS=new Set(['read','wait','copy','click','fill','check','uncheck','select','context_click','key','paste','double_click','hover','scroll','range','drag','upload','download','switch_tab','close_tab','navigate','new_tab','back','forward','reload','screenshot','export','logs','assets','dialog_accept','dialog_dismiss','clipboard_write','clipboard_read','mark_deliverable','mark_handoff','viewport_set','viewport_reset']);
@@ -19,6 +20,7 @@ export class OfficialTabDriver{
   source(framePath){let source=this.tab.playwright;for(const selector of framePath)source=source.frameLocator(selector);return source;}
   locator(c){
     const source=this.source(c._framePath||[]);
+    if(c.attributes.dom_path)return source.locator(c.attributes.dom_path);
     if(c.automation_id)return source.locator('[id='+quoted(c.automation_id)+']');
     return source.getByRole(c.role,{name:c.name,exact:true});
   }
@@ -28,13 +30,15 @@ export class OfficialTabDriver{
     if(!c.enabled||!c.visible)stop('CHROME_ELEMENT_NOT_ACTIONABLE');
     for(const frame of c._frames||[]){
       const loc=this.source(frame.parents).locator(frame.selector);
-      if(await loc.count()!==1||await loc.getAttribute('src')!==frame.rawSrc)stop('CHROME_FRAME_CHANGED');
+      if(await loc.count()!==1||JSON.stringify(await loc.evaluate(frameIdentity))!==JSON.stringify(frame.identity))stop('CHROME_FRAME_CHANGED');
     }
     const loc=this.locator(c);
     if(await loc.count()!==1)stop('CHROME_AMBIGUOUS_CONTROL');
     const check=await loc.evaluate(probe);
     if(check.password)stop('CHROME_PASSWORD_CONTROL');
     if(check.role!==c.role||check.name!==c.name)stop('CHROME_CONTROL_STALE');
+    if(c.attributes.context!==undefined&&check.context!==c.attributes.context)stop('CHROME_CONTROL_STALE');
+    if(c.attributes.neighborhood!==undefined&&check.neighborhood!==c.attributes.neighborhood)stop('CHROME_CONTROL_STALE');
     if(check.tag!==c.attributes.tag||check.id!==c.automation_id||check.type!==c.attributes.type||check.value!==c.value||check.checked!==c.checked||check.href!==c.attributes.href||check.submit!==c.attributes.submit)stop('CHROME_CONTROL_STALE');
     if(!await loc.isVisible()||!await loc.isEnabled())stop('CHROME_ELEMENT_NOT_ACTIONABLE');
     return loc;
@@ -58,27 +62,44 @@ export class OfficialTabDriver{
         const frame=queue.shift();
         const source=this.source(frame.path);
         const data=frame.path.length?await source.locator('html').evaluate(readControls):await this.tab.playwright.evaluate(readControls);
-        if(data.overflow||controls.length+data.controls.length>600)stop('CHROME_STATE_TOO_LARGE');
+        if(data.overflow||controls.length+data.controls.length>2400)stop('CHROME_STATE_TOO_LARGE');
         let frameUrl=data.url||frame.url;
         if(frameUrl==='about:srcdoc'||frameUrl==='about:blank')frameUrl=frame.url;else this.checkUrl(frameUrl);
         for(const raw of data.controls){
-          const key=digest([url,frame.path,frameUrl,raw.role,raw.name,raw.automation_id,raw.attributes.tag,raw.attributes.type]);
+          const identity=raw.attributes.dom_path||[raw.role,raw.name];
+          const key=digest([url,frame.path,frameUrl,raw.automation_id,raw.attributes.tag,raw.attributes.type,identity]);
           const occurrence=count.get(key)||0;count.set(key,occurrence+1);
           const c={...raw,id:key+':'+occurrence,frame_url:frameUrl};
           this.bindings.set(c.id,{...c,_framePath:frame.path,_frames:frame.frames,_pageUrl:url});controls.push(c);
           if(raw.role==='iframe'&&raw.visible){
             if(frame.path.length>=4)stop('CHROME_FRAME_DEPTH_LIMIT');
-            const nextUrl=raw.attributes.srcdoc==='true'||!raw.attributes.src?frameUrl:this.checkUrl(raw.attributes.src);
-            const selector=frameSelector(raw),frameLoc=source.locator(selector);
-            if(await frameLoc.count()!==1)stop('CHROME_FRAME_IDENTITY_UNAVAILABLE');
-            queue.push({path:[...frame.path,selector],frames:[...frame.frames,{parents:frame.path,selector,rawSrc:await frameLoc.getAttribute('src')}],url:nextUrl});
+            let nextUrl;
+            try{nextUrl=raw.attributes.srcdoc==='true'||!raw.attributes.src||raw.attributes.src==='about:blank'?frameUrl:this.checkUrl(raw.attributes.src);}
+            catch(error){
+              if(this.contract.observation_policy==='public_ui'&&error.safeReason==='CHROME_ORIGIN_DENIED'){
+                c.attributes.frame_access='origin_out_of_scope';continue;
+              }
+              throw error;
+            }
+            let selector,frameLoc;
+            for(const candidate of frameSelectors(raw)){
+              const loc=source.locator(candidate);
+              if(await loc.count()===1){selector=candidate;frameLoc=loc;break;}
+            }
+            if(!frameLoc)stop('CHROME_FRAME_IDENTITY_UNAVAILABLE');
+            const identity=await frameLoc.evaluate(frameIdentity);
+            if(identity.id!==raw.automation_id||identity.name!==raw.attributes.name_attr||identity.srcdoc!==raw.attributes.srcdoc||
+               (raw.attributes.raw_src!==undefined&&identity.src!==raw.attributes.raw_src))stop('CHROME_FRAME_CHANGED');
+            queue.push({path:[...frame.path,selector],frames:[...frame.frames,{parents:frame.path,selector,identity}],url:nextUrl});
           }
         }
       }
     }
     this.lifecycle?.observed(this,this.tab,{url,controls});
     for(const [name,value] of this.receipts)controls.push({id:'receipt:'+name,role:'status',name:'Jev artifact '+name,automation_id:'',frame_url:url,enabled:true,visible:true,password:false,value:null,checked:null,attributes:{text:JSON.stringify(value)}});
-    return {url,controls,tab_count:this.tabs.size};
+    const result={url,controls,tab_count:this.tabs.size};
+    if(Buffer.byteLength(JSON.stringify(result),'utf8')>1800000)stop('CHROME_STATE_TOO_LARGE');
+    return result;
   }
   async dispatch(method,payload){
     if(method==='bind'){
@@ -96,8 +117,9 @@ export class OfficialTabDriver{
     const c=this.bindings.get(payload.control_id),loc=await this.fresh(c);
     if(await this.location()!==url)stop('CHROME_PAGE_CHANGED');
     if(['fill','paste','select','key','range','upload','download'].includes(op)&&typeof value!=='string')stop('CHROME_INPUT_NOT_ALLOWED');
+    const navigation=await watchNavigation(this,c,op,value);
     if(['fill','paste'].includes(op)){
-      if(c.role!=='textbox')stop('CHROME_UNSUPPORTED_ACTION');await loc.fill(value,{timeoutMs:3500});
+      if(!['textbox','searchbox'].includes(c.role))stop('CHROME_UNSUPPORTED_ACTION');await loc.fill(value,{timeoutMs:3500});
     }else if(['click','context_click','double_click'].includes(op)){
       if(c.attributes.href)this.checkUrl(c.attributes.href);
       try{if(op==='double_click')await loc.dblclick({timeoutMs:3500});else await loc.click({button:op==='context_click'?'right':'left',timeoutMs:3500});}
@@ -151,6 +173,7 @@ export class OfficialTabDriver{
       await loc.click({timeoutMs:3500});await pending;
       return {dispatched:true,download_triggered:true};
     }else stop('CHROME_UNSUPPORTED_ACTION');
+    await followNavigation(this,navigation);
     return {dispatched:true};
   }
   async pageAction(op,value,options,payload){
