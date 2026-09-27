@@ -62,5 +62,5 @@ def passes(answer,threshold):
 
 def indistinguishable(selected,controls):
     # Runtime ids do not give Jev semantic evidence about which identical control is intended.
-    def evidence(c):return (c.role,c.name,c.attributes.get('members','') if c.role=='group' else '')
+    def evidence(c):return (c.role,c.name,c.attributes.get('members','') if c.role=='group' else c.attributes.get('context',''))
     return sum(evidence(c)==evidence(selected) for c in controls)>1

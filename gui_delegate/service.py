@@ -25,7 +25,7 @@ def capabilities():
     from .chrome_policy import describe as chrome_policy
     policy=load()
     from .chrome_session import OPS
-    return {"version":"0.4.3","installed":enabled(),"drivers":["official Chrome DOM/open shadow/allowed frames/validated drag","Windows UIA patterns","named surfaces and local value transfer","clipboard HGLOBAL preservation"],
+    return {"version":"0.7.0","installed":enabled(),"drivers":["official Chrome DOM/open shadow/allowed frames/validated drag","Windows UIA patterns","named surfaces and local value transfer","clipboard HGLOBAL preservation"],
       "new_browser_profiles_only":False,"legacy_isolated_browser":"REMOVED; use official Chrome session or scoped Astra fallback","official_chrome":{**chrome_policy(),"supported_operations":sorted(OPS-{'dialog_accept','dialog_dismiss'}),"coverage_report":str(ROOT/'gui_delegate/reports/chrome-complete-20260923/REPORT.md'),"all_official_capabilities_autonomous":False,"blocked_operations":["JavaScript modal handling: current official host focus initialization times out","generic content.export: current Chrome backend rejects command"],"standalone_mcp_connection":False},"task_tools":list(TOOLS),"physical_coordinates":False,"images_to_jev":False,"input_ownership":input_policy(),
       "thresholds":"scoped synthetic holdout profiles plus engineering defaults" if policy else "engineering initial values, uncalibrated",
       "decision_policy":policy.id if policy else None,"policy_model":policy.model if policy else None,
@@ -34,7 +34,7 @@ def capabilities():
       "unsupported":["secure desktop/UAC","unstructured Canvas/video/remote desktop","unknown application planning","generated text","desktop coordinate drag","non-HGLOBAL clipboard handles","official Chrome without active Codex Browser Use session","official Chrome iframe coordinate gestures","official Chrome JS native dialog actions on current host"]}
 
 def initial(token,c):
-    return {"status":"running","task_id":token[:32],"completed":[],"remaining":[s.id for s in c.steps],
+    return {"status":"running","task_id":token[:32],"completed":[],"remaining":['goal'] if c.mode=='goal' else [s.id for s in c.steps],
        "evidence_refs":[],"usage":{},"escalation_reason":None,"resume_token":token}
 
 async def wait_result(directory,wait_seconds,process=None):

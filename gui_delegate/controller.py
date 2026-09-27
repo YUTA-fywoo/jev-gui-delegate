@@ -14,6 +14,7 @@ THRESHOLDS=dict(decision_policy.DEFAULT)
 
 def matches(control,query,semantic=False):
     return (control.role.casefold()==query.role.casefold() and
+            (query.control_id is None or control.id==query.control_id) and
             (query.name is None or semantic or control.name==query.name) and
             (query.automation_id is None or control.automation_id==query.automation_id) and
             (query.group is None or control.attributes.get("group")==query.group) and
@@ -30,6 +31,19 @@ def predicate(p,obs,contract,artifacts=None):
     if p.surface!=obs.surface:return False
     expected=input_value(p.input_ref,contract,artifacts) if p.input_ref else p.equals
     if p.kind=="url":return obs.location==expected
+    if p.kind in ('url_path','url_path_prefix','url_query'):
+        from urllib.parse import urlsplit,parse_qs,unquote
+        parsed=urlsplit(obs.location)
+        if p.kind=='url_path':return parsed.path==expected
+        if p.kind=='url_path_prefix':
+            prefix=expected.rstrip('/')+'/'
+            return parsed.path.startswith(prefix) and len(parsed.path)>len(prefix)
+        values=parse_qs(parsed.query,keep_blank_values=True).get(p.parameter,[])
+        if len(values)!=1:return False
+        # Some SPA routers encode an already encoded query. Decode at most one
+        # additional layer, comparing the entire value rather than a substring.
+        return values[0]==expected or unquote(values[0])==expected
+    if p.kind=='changed':return obs.fingerprint!=expected
     if p.kind=="tab_count":return obs.tab_count==expected
     if p.kind=="file":
         if not p.input_ref or contract.inputs[p.input_ref].kind!="path":return False
@@ -73,8 +87,11 @@ class Controller:
         self.semantic_rules_active=semantic_rule_policy.active()
         self.usage.update(semantic_alias_decisions=0,semantic_rules=semantic_rules.VERSION if self.semantic_rules_active else None)
         self.cache={};self.seen={};self.decision_context=None;self.override=None;self.artifacts={};self.selection_mode=None
+        self.counted_actions=set()
     def observe(self):
         self.check_stop();obs=self.driver.observe();self.usage["observations"]+=1
+        opaque=sum(c.attributes.get('frame_access')=='origin_out_of_scope' for c in obs.controls)
+        if opaque:self.usage['opaque_frames_out_of_scope']=opaque
         self.record("observation",observation=obs)
         if any(predicate(p,obs,self.contract,self.artifacts) for p in self.contract.stop_conditions):raise Stop("CONTRACT_STOP_CONDITION","paused")
         return obs
@@ -109,6 +126,11 @@ class Controller:
             raise Stop("NO_MATCH" if not found else "AMBIGUOUS_EXACT_MATCH")
         found=[c for c in obs.controls if c.visible and c.enabled and not c.password and matches(c,step.target,True)]
         if not found:raise Stop("NO_MATCH")
+        if self.contract.observation_policy=='public_ui':
+            from .adaptive import choose_control
+            selected=choose_control(self,step,obs,found)
+            check_kind(selected)
+            return selected
         if any(c.name not in self.contract.jev_label_allowlist for c in found):raise Stop("UNAPPROVED_OBSERVATION_TEXT")
         if len(found)>step.max_candidates:
             names={c.attributes.get('group','') for c in found}
@@ -187,9 +209,13 @@ class Controller:
         for retry in range(budget.reobservations+1):
             try:obs=self.observe()
             except Stop as exc:
-                if exc.reason in ('FRAME_LOADING','STATE_CHANGED_DURING_OBSERVATION','CONTROL_STALE') and retry<budget.reobservations:
+                if exc.reason in ('FRAME_LOADING','STATE_CHANGED_DURING_OBSERVATION','CONTROL_STALE','CHROME_FRAME_CHANGED','CHROME_CONTROL_STALE') and retry<budget.reobservations:
                     time.sleep(.2);continue
                 raise
+            from .browser_guard import action_guard
+            if step.planned_guard:
+                if action_guard(obs,step.target.control_id)!=step.planned_guard:raise Stop('GOAL_PLAN_STALE')
+            elif step.planned_fingerprint and obs.fingerprint!=step.planned_fingerprint:raise Stop('GOAL_PLAN_STALE')
             if step.optional_if and predicate(step.optional_if,obs,self.contract,self.artifacts):
                 self.record("branch_skipped",step=step.id);return obs
             override_count=self.usage["astra_decision_overrides"]
@@ -209,7 +235,8 @@ class Controller:
                 destination_control_id=destination.id if destination else None)
             self.check_stop()
             fresh=self.observe()
-            if fresh.fingerprint!=action.fingerprint or time.monotonic()-obs.observed_at>5:
+            same_snapshot=(action_guard(fresh,action.control_id)==action_guard(obs,action.control_id)) if step.planned_guard else fresh.fingerprint==action.fingerprint
+            if not same_snapshot or time.monotonic()-fresh.observed_at>5:
                 self.record("stale_discarded",step=step.id)
                 if retry<budget.reobservations:continue
                 raise Stop("STATE_KEEPS_CHANGING")
@@ -233,24 +260,39 @@ class Controller:
                 self.record('artifacts',values=self.artifacts)
             failure=None
             try:self.driver.act(action,step,value)
-            except Stop:raise
+            except Stop as exc:
+                # These official adapter errors are emitted by fresh() before
+                # the action is invoked. Unknown/time-out errors stay dispatched.
+                if self.contract.mode=='goal' and exc.reason in ('CHROME_CONTROL_STALE','CHROME_FRAME_CHANGED','CHROME_ELEMENT_NOT_ACTIONABLE'):
+                    checkpoint.phase='idle';checkpoint.pending_step=None
+                    self.record('checkpoint',checkpoint=checkpoint)
+                    raise Stop('GOAL_PLAN_STALE') from None
+                raise
             except Exception:failure="DRIVER_ACTION_UNCERTAIN"
             self.usage["actions"]+=1
+            self.counted_actions.add(step.id)
             if (not step.target or not step.target.semantic or self.selection_mode=='semantic_alias') and override_count==self.usage["astra_decision_overrides"]:self.usage["deterministic_decisions"]+=1
             # Never replay on timeout. Reobserve to determine whether the first action took effect.
             post=None
-            for n in range(budget.no_progress+1):
+            browser_wait=self.contract.target.connection=='official_chrome'
+            verification_deadline=time.monotonic()+10 if browser_wait else None
+            n=0
+            while browser_wait or n<=budget.no_progress:
                 # Cancellation after dispatch still needs read-only reconciliation.
                 post=self.driver.observe();self.usage["observations"]+=1
                 self.record("observation",observation=post)
                 if verified(step,post,self.contract,action.control_id,self.artifacts):
                     if step.op not in NON_DOM_OPS and post.fingerprint==fresh.fingerprint:
-                        if n<budget.no_progress:time.sleep(0.25);continue
+                        if (browser_wait and time.monotonic()<verification_deadline) or (not browser_wait and n<budget.no_progress):
+                            self.check_stop();time.sleep(.25);n+=1;continue
                         raise Stop("NO_PROGRESS")
                     self.record("verified",step=step.id,operation=step.op)
                     checkpoint.phase="verified";checkpoint.pending_step=None
                     self.record("checkpoint",checkpoint=checkpoint)
                     return post
-                if n<budget.no_progress:time.sleep(0.25)
+                if browser_wait and time.monotonic()>=verification_deadline:break
+                if browser_wait or n<budget.no_progress:
+                    self.check_stop();time.sleep(.25)
+                n+=1
             raise Stop(failure or "POSTCONDITION_UNVERIFIED")
         raise Stop("REOBSERVATION_BUDGET")

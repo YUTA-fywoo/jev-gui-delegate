@@ -20,7 +20,7 @@ def work(task_id,browser_session=None,status_sink=None):
     request=storage.read(directory/"request.dpapi");token=request["token"]
     c=Contract.model_validate(request["contract"]);start=time.monotonic();deadline=request["created_at"]+c.budget.seconds
     checkpoint=Checkpoint(task_id=task_id,contract_hash=digest(c.model_dump()),next_step=0,completed=[],phase="idle")
-    driver=None;controller=None;mutex=None;locked=False;input_guard=None
+    driver=None;controller=None;mutex=None;locked=False;input_guard=None;goal_planner=None;active_step=None;plan_retries=0
     heartbeat=directory/"heartbeat";last_observation=None;success_observations={}
     # A Windows Job Object owns only this worker and any children it creates.
     # Attached existing applications are not members and can never be terminated here.
@@ -49,8 +49,13 @@ def work(task_id,browser_session=None,status_sink=None):
                             item["observed"]=value
                 checks.append(item)
         context=controller.decision_context if controller and status=="escalated" else None
-        if context and (checkpoint.next_step>=len(c.steps) or context.get('step_id')!=c.steps[checkpoint.next_step].id):context=None
-        output=Result(status=status,task_id=task_id,completed=list(checkpoint.completed),remaining=[s.id for s in c.steps[checkpoint.next_step:]],
+        expected_step=active_step.id if active_step else (f'goal_{checkpoint.next_step+1:03d}' if c.mode=='goal' else None)
+        if context and context.get('step_id')!=expected_step:context=None
+        if context and c.mode=='goal' and len(context.get('candidates',[]))>24:
+            context={k:v for k,v in context.items() if k!='candidates'}|{'candidate_count':len(controller.decision_context['candidates']),
+                'candidate_evidence':'Complete candidates are retained in the local encrypted decision-request file; no candidate subset is returned.'}
+        remaining=([] if status=='completed' else ['goal']) if c.mode=='goal' else [s.id for s in c.steps[checkpoint.next_step:]]
+        output=Result(status=status,task_id=task_id,completed=list(checkpoint.completed),remaining=remaining,
             evidence_refs=[str(directory/"events.jsonl")],usage=usage,escalation_reason=reason,resume_token=token,verification=checks,
             escalation_context=context,
             routing=routing(usage,reason))
@@ -76,7 +81,7 @@ def work(task_id,browser_session=None,status_sink=None):
         if (ctypes.windll.user32.GetAsyncKeyState(0x11)&0x8000 and ctypes.windll.user32.GetAsyncKeyState(0x12)&0x8000 and ctypes.windll.user32.GetAsyncKeyState(0x7B)&0x8000):
             storage.atomic(storage.DATA/"STOP",b"1");raise Stop("EMERGENCY_STOP","cancelled")
         if time.time()>=deadline:raise Stop("TASK_DEADLINE","blocked")
-        if browser_session and checkpoint.next_step<len(c.steps):browser_session.check_segment()
+        if browser_session and (c.mode=='goal' or checkpoint.next_step<len(c.steps)):browser_session.check_segment()
         if input_guard:input_guard.check()
     def watchdog():
         while not finished.wait(0.25):
@@ -100,16 +105,33 @@ def work(task_id,browser_session=None,status_sink=None):
         record('input_guard',mode=input_guard.mode)
         driver=create_driver(c,input_guard=input_guard,browser_session=browser_session);driver.open()
         controller=Controller(c,driver,stop_check,record)
+        if c.mode=='goal':
+            from .adaptive import GoalPlanner
+            goal_planner=GoalPlanner(controller)
         record("checkpoint",checkpoint=checkpoint)
-        while checkpoint.next_step<len(c.steps):
+        while c.mode=='goal' or checkpoint.next_step<len(c.steps):
             try:
-                stop_check();step=c.steps[checkpoint.next_step]
+                stop_check()
+                if c.mode=='goal':
+                    # Keep the generated step across segment pauses and uncertain
+                    # dispatches. Replanning is permitted only before dispatch.
+                    if active_step is None:
+                        obs=controller.observe()
+                        if goal_planner.done(obs):break
+                        active_step=goal_planner.plan(obs,checkpoint.next_step)
+                        storage.save(directory/'goal-step.dpapi',active_step.model_dump())
+                    step=active_step
+                else:step=c.steps[checkpoint.next_step];active_step=step
                 if checkpoint.phase=="dispatched":
                     # A timed-out/failed action is only reconciled. Never automatically replay it.
                     obs=controller.observe()
                     if not verified(step,obs,c,checkpoint.pending_control_id,controller.artifacts) or (step.op not in NON_DOM_OPS and obs.fingerprint==checkpoint.before_fingerprint):raise Stop("UNCERTAIN_ACTION_REQUIRES_RECONCILIATION")
+                    if step.id not in controller.counted_actions:
+                        controller.usage['actions']+=1;controller.counted_actions.add(step.id)
+                        controller.usage['reconciled_actions']=controller.usage.get('reconciled_actions',0)+1
                 else:controller.perform(step,checkpoint)
                 checkpoint.completed.append(step.id);checkpoint.next_step+=1;checkpoint.phase="idle";checkpoint.pending_step=None
+                active_step=None;plan_retries=0
                 record("checkpoint",checkpoint=checkpoint)
                 if hasattr(driver,'checkpoint'):
                     stop_check()
@@ -117,6 +139,8 @@ def work(task_id,browser_session=None,status_sink=None):
                     controller.usage.update(tab_stats);record('browser_tabs',**tab_stats)
                 result("running")
             except Stop as exc:
+                if c.mode=='goal' and checkpoint.phase=='idle' and exc.reason in ('GOAL_PLAN_STALE','JEV_WAIT','JEV_REOBSERVE','CHROME_FRAME_CHANGED','FRAME_LOADING') and plan_retries<c.budget.reobservations:
+                    active_step=None;plan_retries+=1;record('goal_reobserve',reason=exc.reason,attempt=plan_retries);time.sleep(.2);continue
                 checkpoint.reason=exc.reason;record("checkpoint",checkpoint=checkpoint)
                 controller.usage["escalations"]+=int(exc.status=="escalated")
                 # Decision repair is not permission for a direct GUI takeover.
@@ -135,6 +159,8 @@ def work(task_id,browser_session=None,status_sink=None):
                         if old_scope!=new_scope:raise Stop("RESUME_SCOPE_CHANGED","blocked")
                         for name,old_input in c.inputs.items():
                             if not old_input.pending and old_input!=new.inputs[name]:raise Stop("RESUME_EXISTING_INPUT_CHANGED","blocked")
+                        if c.inputs!=new.inputs or checkpoint.reason in ('USER_TAKEOVER','USER_CLIPBOARD_CHANGED'):
+                            if hasattr(controller,'adaptive_cache'):controller.adaptive_cache.clear()
                         validate_contract(new);c=new;controller.contract=c;controller.cache.clear();checkpoint.contract_hash=digest(c.model_dump())
                         for name in ('fallback.dpapi','fallback-binding.dpapi'):(directory/name).unlink(missing_ok=True)
                         if (directory/"override.dpapi").exists():

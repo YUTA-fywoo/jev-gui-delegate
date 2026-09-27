@@ -63,6 +63,9 @@ def check_url(url, contract):
     return url
 
 def validate_contract(c:Contract):
+    if c.mode=='goal':
+        texts=[c.goal]+[p.equals for p in c.success if isinstance(p.equals,str)]+[p.target.name for p in c.success if p.target and p.target.name]
+        if any(SECRET.search(t) for t in texts):raise Stop('SENSITIVE_INPUT_REQUIRES_USER')
     for p in c.scope.read_roots+c.scope.write_roots+c.scope.programs:
         if not Path(p).is_absolute(): raise Stop("ABSOLUTE_SCOPE_REQUIRED","blocked")
     if c.target.driver=="browser": check_url(c.target.url,c)
@@ -71,6 +74,7 @@ def validate_contract(c:Contract):
             raise Stop("PROGRAM_DENIED","blocked")
     if any(v.sensitive for v in c.inputs.values()): raise Stop("SENSITIVE_INPUT_REQUIRES_USER","escalated")
     for value in c.inputs.values():
+        safe_text(value.purpose)
         if SECRET.search(value.value): raise Stop("SENSITIVE_INPUT_REQUIRES_USER")
         if value.kind=="path": within(value.value,c.scope.read_roots+c.scope.write_roots)
     for text in c.jev_label_allowlist: safe_text(text)
@@ -113,6 +117,14 @@ def authorize(step,control,contract,location):
     if control and control.attributes.get("href") and step.op in ("click","context_click"):
         check_url(control.attributes["href"],contract)
     if control and control.attributes.get("submit")=="true": risk=True
+    if (contract.mode=='goal' and step.id.startswith('goal_') and step.op=='key'
+        and step.input_ref==contract.goal_options.search_submit_ref and control
+        and control.attributes.get('public_search')=='true' and not RISK.search(control.name)):
+        # A task-level search instruction authorizes a public search only. It
+        # never grants submission authority to arbitrary forms or page text.
+        destination=control.attributes.get('form_action')
+        if destination:check_url(destination,contract)
+        risk=False
     if risk:
         name=control.name if control else ""
         matches=[a for a in contract.authorizations if a.step_id==step.id and a.effect==step.effect and

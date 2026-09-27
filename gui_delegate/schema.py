@@ -14,6 +14,7 @@ Effect = Literal["none", "local", "submit", "send", "publish", "pay", "delete", 
 
 class Query(Strict):
     role: str = Field(min_length=1, max_length=40)
+    control_id: str | None = Field(default=None, max_length=200)
     name: str | None = Field(default=None, max_length=160)
     automation_id: str | None = Field(default=None, max_length=160)
     frame_url: str | None = Field(default=None, max_length=2048)
@@ -23,7 +24,8 @@ class Query(Strict):
 class Predicate(Strict):
     surface: str = "main"
     comparison: Literal['eq','ne','gt','ge','lt','le'] = 'eq'
-    kind: Literal["exists", "absent", "value", "text", "checked", "url", "file", "tab_count", "attribute"]
+    kind: Literal["exists", "absent", "value", "text", "checked", "url", "url_path", "url_path_prefix", "url_query", "file", "tab_count", "attribute", "changed"]
+    parameter: str | None = Field(default=None,max_length=100)
     attribute: Literal['scrollTop','scrollLeft','files'] | None = None
     target: Query | None = None
     equals: str | bool | int | None = None
@@ -33,6 +35,10 @@ class Predicate(Strict):
     def valid_comparison(self):
         if self.comparison!='eq' and self.kind not in ('value','attribute'):raise ValueError('comparison requires value predicate')
         if self.kind=='attribute' and not self.attribute:raise ValueError('attribute name required')
+        if self.kind=='url_query' and not self.parameter:raise ValueError('URL query parameter required')
+        if self.kind=='url_path_prefix':
+            if self.input_ref or not isinstance(self.equals,str) or not self.equals.startswith('/') or self.equals.startswith('//') or self.equals.rstrip('/')=='' or any(x in self.equals for x in ('?','#','\\')) or any(x in ('.','..') for x in self.equals.split('/')):
+                raise ValueError('non-root observed path prefix required')
         return self
 
 class InputValue(Strict):
@@ -41,6 +47,7 @@ class InputValue(Strict):
     sensitive: bool = False
     pending: bool = False
     captured: bool = False
+    purpose: str = Field(default='',max_length=160)
 
 class BrowserOptions(Strict):
     scroll_x: int = Field(default=0,ge=-4000,le=4000)
@@ -70,6 +77,16 @@ class Step(Strict):
     # A semantic request may examine this many observed candidates, never discard a tail silently.
     max_candidates: int = Field(default=12, ge=2, le=24)
     browser_options: BrowserOptions | None = None
+    planned_fingerprint: str | None = Field(default=None,pattern=r'^[a-f0-9]{64}$')
+    planned_guard: str | None = Field(default=None,pattern=r'^[a-f0-9]{64}$')
+
+class GoalOptions(Strict):
+    # Only these explicit caller-supplied values may be used for adaptive filling.
+    input_refs: list[str] = Field(default_factory=list,max_length=12)
+    # Opt-in to Enter on an observed public search control. Ordinary submits are
+    # still denied; this reference must contain the literal key Enter.
+    search_submit_ref: str | None = None
+    batch_size: int = Field(default=16,ge=2,le=24)
 
 class Authorization(Strict):
     step_id: str
@@ -118,12 +135,15 @@ class Target(Strict):
 class Contract(Strict):
     version: Literal[1] = 1
     goal: str = Field(min_length=1, max_length=600)
+    mode: Literal['steps','goal'] = 'steps'
+    observation_policy: Literal['allowlist','public_ui'] = 'allowlist'
+    goal_options: GoalOptions = Field(default_factory=GoalOptions)
     language: Literal["zh", "ja", "en", "mixed"] = "en"
     target: Target
     targets: dict[str,Target] = Field(default_factory=dict,max_length=7)
     scope: Scope
     inputs: dict[str, InputValue] = Field(default_factory=dict, max_length=40)
-    steps: list[Step] = Field(min_length=1, max_length=120)
+    steps: list[Step] = Field(default_factory=list, max_length=120)
     success: list[Predicate] = Field(min_length=1, max_length=12)
     stop_conditions: list[Predicate] = Field(default_factory=list, max_length=12)
     authorizations: list[Authorization] = Field(default_factory=list, max_length=20)
@@ -132,6 +152,16 @@ class Contract(Strict):
 
     @model_validator(mode="after")
     def valid_refs(self):
+        if self.mode=='steps' and not self.steps:raise ValueError('step mode requires steps')
+        if self.mode=='goal':
+            if self.steps or self.targets:raise ValueError('goal mode uses one browser surface and no preplanned steps')
+            if self.target.connection!='official_chrome' or self.observation_policy!='public_ui':raise ValueError('goal mode requires official browser and explicit public UI observation')
+            if any(p.kind=='changed' for p in self.success):raise ValueError('changed alone cannot prove goal success')
+            if any(ref not in self.inputs or self.inputs[ref].kind!='text' or self.inputs[ref].captured or self.inputs[ref].sensitive for ref in self.goal_options.input_refs):raise ValueError('goal input must be explicit nonsensitive text')
+            key=self.goal_options.search_submit_ref
+            if key and (key not in self.inputs or self.inputs[key].value!='Enter' or self.inputs[key].pending or 'key' not in self.scope.actions):raise ValueError('search submit requires explicit Enter reference and key scope')
+            if key in self.goal_options.input_refs:raise ValueError('search key cannot be a fill value')
+        if self.observation_policy=='public_ui' and self.target.driver!='browser':raise ValueError('public UI labels are browser only')
         if 'main' in self.targets:raise ValueError('main target is reserved')
         if any(not re.fullmatch(r'[a-zA-Z0-9_-]{1,40}',name) for name in self.targets):raise ValueError('invalid surface name')
         surfaces={'main',*self.targets}
@@ -217,6 +247,7 @@ class Result(Strict):
     escalation_context: dict | None = None
     routing: dict = Field(default_factory=dict)
     tab_cleanup: dict = Field(default_factory=dict)
+    page: dict | None = None
 
 class DecisionOverride(Strict):
     step_id: str
