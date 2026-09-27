@@ -22,7 +22,7 @@ def write_manifest():
     codex=read_report("codex-test.json")
     current=read_report("current-session-test.json")
     key,source=resolve_key()
-    versions={n:importlib.metadata.version(n) for n in ("typesafe-sdk","mcp","playwright","pywinauto","pywin32","tomlkit")}
+    versions={n:importlib.metadata.version(n) for n in ("typesafe-sdk","mcp","pywinauto","pywin32","tomlkit")}
     model=direct.get("result",{}).get("model") or mcp.get("live_evaluate",{}).get("result",{}).get("model")
     tests={"direct_jev_api":direct.get("status","NOT_RUN"),
         "mcp_tools_list":mcp.get("tools_list",{}).get("status","NOT_RUN"),
@@ -51,7 +51,7 @@ def write_manifest():
         "project_path":str(ROOT),"runtime":{"os":platform.platform(),"native_windows":True,"wsl":False,
         "python_executable":sys.executable,"python_version":platform.python_version(),"python_base":sys.base_prefix,
         "interactive_session_id":session_id.value,"codex_client":"local Windows Codex desktop with bundled CLI",
-        "codex_version":"0.155.0-alpha.16","node_version":"24.19.0","versions":versions},
+        "codex_version":"not_probed","node_version":"not_probed","versions":versions},
         "mcp_name":"jev-bridge","mcp_origin":"locally built; not a TypeSafe vendor MCP package",
         "registration":"registered","transport":"stdio","config_path":str(codex_home()/"config.toml"),
         "registration_backup":read_report("registration.json").get("backup"),
@@ -81,6 +81,8 @@ def write_manifest():
             manifest["todo"]=previous.get("todo",todos)
             for key in ("gui_delegation_scope","all_gui_takeover"):
                 if key in previous:manifest[key]=previous[key]
+    path.parent.mkdir(parents=True,exist_ok=True)
+    (ROOT/'reports').mkdir(parents=True,exist_ok=True)
     path.write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding="utf-8")
     (ROOT/"reports/acceptance.json").write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding="utf-8")
     return path

@@ -4,6 +4,8 @@
 
 这是个人设计、借助 AI 实现并持续验收的工具项目。项目贡献包括任务契约、工具编排、低置信恢复、权限与状态检查、测试和反馈迭代；Jev 模型、TypeSafe SDK、Codex 和浏览器插件属于上游产品。
 
+当前版本 **0.7.0**：[Windows 完整安装包](packages/jev-gui-delegate-0.7.0-win64.zip) · [安装说明](INSTALL_ZH.md) · [改动记录](CHANGELOG.md) · [真实网站与回归验证](VALIDATION.md)。
+
 ## 为什么做
 
 逐步操作网页会让主模型反复读取界面、选择控件和接收工具返回。这个项目把一段可明确验收的操作交给本地控制器，减少主模型在操作循环中的参与，同时保留状态检查、异常恢复和用户接管。
@@ -23,6 +25,8 @@ flowchart LR
 
 ## 已完成的设计
 
+- **公开网页目标模式**：自动发现控件和候选；排名不确定时逐项判断可接受动作，保留全部候选以及原有概率、置信度和身份检查。
+- **真实页面适配**：包含邻近作者信息、新标签接续、有限加载等待、正文与日期控件回传，以及重复导航和输出冲突恢复。
 - **两条执行路径**：Chrome 复用宿主提供的官方浏览器会话；Windows 使用 UI Automation。没有复制个人浏览器配置或提取 Cookie。
 - **可检查的任务契约**：目标、允许动作、范围、输入、步骤和成功条件显式定义。
 - **按需使用模型**：确定性匹配由本地代码执行；语义选择调用 Jev。零模型调用按实际记录，不当作 Jev 推理成功。
@@ -60,7 +64,9 @@ flowchart LR
 
 面向 **Windows x64、Python 3.12、Node.js**。原生 GUI 需要交互式桌面；Chrome 路径还需要 Codex 宿主提供兼容的官方浏览器会话 API。本仓库不能独立创建或替代该宿主会话。
 
-建议使用 `C:\jev\jev-bridge`，部分历史命令和 skill 示例以此为默认路径。使用其他路径时需同步调整相应示例。先安装依赖并运行离线测试：
+下载完整安装包后解压到一个长期保留的目录，运行 `install-skill.cmd`。安装器会建立隔离环境、注册 MCP、生成本机浏览器配置并安装 skill；含空格的目录也受支持。不会附带 API 密钥、浏览器 Cookie 或个人日志。安装完成后通过 `set-key.cmd` 设置自己的 TypeSafe 密钥，并在 Codex 中连接官方 Chrome 插件。
+
+也可以从源码安装。先安装依赖并运行离线测试：
 
 ```powershell
 git clone https://github.com/YUTA-fywoo/jev-gui-delegate.git C:\jev\jev-bridge
@@ -71,7 +77,7 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m unittest discover -s gui_delegate/tests -p "test_*.py"
 ```
 
-需要注册到 Codex 时运行 `install.cmd` 和 `gui-install.cmd`。安装器会修改用户级 MCP、skill 和路由配置，保留备份并检查冲突；已有同名目录时先检查，不覆盖本机正在使用的项目。`health.cmd` 只检查就绪状态；`verify.cmd` 等实时验证会调用 Jev 服务。
+需要注册到 Codex 时运行 `install-skill.cmd`。安装器修改用户级 MCP、skill 和路由配置，保留备份并检查冲突。升级会保留用户自行修改的 skill 文件并报告冲突；不会覆盖另一个目录注册的同名 MCP。`health.cmd` 只检查就绪状态；`verify.cmd` 等实时验证会调用 Jev 服务。
 
 密钥由本机环境变量 `TYPESAFE_API_KEY` 或 Windows 凭据管理器提供。使用 `set-key.cmd` 的本地输入窗口设置；不要写入仓库、任务契约或聊天。`chrome-runtime.json` 由安装者本机生成并被忽略，仓库不携带原作者的环境路径。
 
