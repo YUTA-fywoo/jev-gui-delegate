@@ -44,5 +44,8 @@ try{
   assert.equal(read([stopped]).controls[0].value,null);assert.equal(read([stopped]).controls[0].attributes.contenteditable,'false');checks++;
   const input=element('INPUT',{type:'text'},{value:'Existing value'});
   assert.equal(read([input]).controls[0].value,'Existing value');assert.equal(probe(input).value,'Existing value');checks++;
+  rich.innerText='\n';rich.textContent='';assert.equal(read([rich]).controls[0].value,'');assert.equal(probe(rich).value,'');checks++;
+  rich.textContent='\n';assert.equal(read([rich]).controls[0].value,'\n');checks++;
+  rich.textContent='';rich.querySelector=()=>({tagName:'IMG'});assert.equal(read([rich]).controls[0].value,'\n');checks++;
 }finally{if(previous===undefined)delete globalThis.getComputedStyle;else globalThis.getComputedStyle=previous;}
 console.log(JSON.stringify({status:'PASS',checks,mode:'controlled DOM; hidden content, placeholders, search identity, context and explicit overflow'}));
